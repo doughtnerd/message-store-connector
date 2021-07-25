@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "version": "0.0.4",
-  "main": "index.js",
+  "main": "dist/index.js",
   "author": "Chris Carlson",
   "license": "MIT",
   "private": false,

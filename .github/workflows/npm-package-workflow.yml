@@ -24,9 +24,9 @@ jobs:
           cache: 'yarn'
       - run: yarn install --frozen-lockfile
       - run: yarn run test:docker
-      
-  build:
 
+  build:
+    needs: test
     runs-on: ubuntu-latest
 
     strategy:

@@ -37,13 +37,17 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repo
+        uses: actions/checkout@master
       - name: Download Artifact
         uses: actions/download-artifact@master
         with:
           name: package-dist
           path: message-store-connector/
       - uses: JS-DevTools/npm-publish@v1
+        working-directory: message-store-connector
         with:
+          access: public
           token: ${{ secrets.NPM_TOKEN }}
 
     # - run: npm ci

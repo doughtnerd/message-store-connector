@@ -1,8 +1,8 @@
 import { v4 as uuid } from "uuid";
-import { connect } from "../src/message-db-client";
-import { MessageStoreConfig } from "../src/types/message-store-config.type";
-import { MessageStore } from "../src/types/message-store.type";
-import { Message } from "../src/types/message.type";
+import { connect } from "../message-db-client";
+import { MessageStoreConfig } from "../types/message-store-config.type";
+import { MessageStore } from "../types/message-store.type";
+import { Message } from "../types/message.type";
 
 describe("Message Store Connector", () => {
   const messageStoreConfig: MessageStoreConfig = {

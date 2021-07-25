@@ -1,4 +1,4 @@
-FROM node:alpine AS base
+FROM node:latest AS base
 
 WORKDIR /usr/src
 

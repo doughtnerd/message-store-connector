@@ -1,0 +1,22 @@
+version: "3.7"
+
+services: 
+  package:
+    image: doughtnerd/message-store-connector:dev
+    build:
+      context: .
+      target: dev
+    links:
+      - message_store
+    command: "./bin/wait-for-it.sh message_store:5432 --timeout=60 -- npm run test"
+    
+  message_store:
+    container_name: message_store
+    image: articulate/message-db:1.2.2
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD: password
+    ports: 
+      - 5432:5432
+    expose:
+      - 5432

@@ -16,7 +16,7 @@
   "author": "Chris Carlson",
   "license": "MIT",
   "private": false,
-  "types": "index.d.ts",
+  "types": "dist/index.d.ts",
   "dependencies": {
     "pg": "^8.6.0",
     "promise-poller": "^1.9.1"

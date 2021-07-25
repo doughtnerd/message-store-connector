@@ -1,14 +1,15 @@
 import { v4 as uuid } from "uuid";
-import { connect } from "../message-db-client";
 import { MessageStoreConfig } from "../types/message-store-config.type";
 import { MessageStore } from "../types/message-store.type";
 import { Message } from "../types/message.type";
+import { NoopLogger } from "../noop-logger";
+import { connect } from "../message-store/connect";
 
 describe("Message Store Connector", () => {
   const messageStoreConfig: MessageStoreConfig = {
-    messageStoreHost: "message_store",
-    messageStorePassword: "password",
-    logger: console,
+    messageStoreHost: process.env.MESSAGE_STORE_HOST as string,
+    messageStorePassword: process.env.MESSAGE_STORE_PASSWORD as string,
+    logger: NoopLogger,
   };
   let messageStore: MessageStore;
 
@@ -25,9 +26,7 @@ describe("Message Store Connector", () => {
       data: {},
       metadata: {},
     });
-    const message = await messageStore.getLastStreamMessage(
-      `testStream-${streamId}`
-    );
+    const message = await messageStore.getLastStreamMessage(`testStream-${streamId}`);
 
     expect(message[0].id).toEqual(messageId);
   });
@@ -56,6 +55,109 @@ describe("Message Store Connector", () => {
           { pollingInterval: 500 }
         );
       });
+  });
+
+  test("Projection can be ran against a stream with one message in it", async () => {
+    const streamId = uuid();
+    const messageId = uuid();
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: messageId,
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+      entity: { timestamps: [] },
+      projectionName: "Test Projection",
+      handlers: {
+        TestEvent: (entity: any, message: any) => {
+          entity.timestamps.push(message.time);
+          return entity;
+        },
+      },
+    });
+
+    expect(testEntity.timestamps.length).toEqual(1);
+  });
+
+  test("Projection can be ran against a stream with multiple messages in it", async () => {
+    const streamId = uuid();
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+      entity: { timestamps: [] },
+      projectionName: "Test Projection",
+      handlers: {
+        TestEvent: (entity: any, message: any) => {
+          entity.timestamps.push(message.time);
+          return entity;
+        },
+      },
+    });
+
+    expect(testEntity.timestamps.length).toEqual(2);
+  });
+
+  test("Projection can be ran against a stream with no message in it", async () => {
+    const streamId = uuid();
+
+    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+      entity: { timestamps: [] },
+      projectionName: "Test Projection",
+      handlers: {
+        TestEvent: (entity: any, message: any) => {
+          entity.timestamps.push(message.time);
+          return entity;
+        },
+      },
+    });
+
+    expect(testEntity.timestamps.length).toEqual(0);
+  });
+
+  test("Projection can be ran against a stream with multiple messages in it beyond the batch size", async () => {
+    const streamId = uuid();
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    const testEntity = await messageStore.project(
+      `testStream-${streamId}`,
+      {
+        entity: { timestamps: [] },
+        projectionName: "Test Projection",
+        handlers: {
+          TestEvent: (entity: any, message: any) => {
+            entity.timestamps.push(message.time);
+            return entity;
+          },
+        },
+      },
+      { batchSize: 1 }
+    );
+
+    expect(testEntity.timestamps.length).toEqual(2);
   });
 
   afterAll(async () => {

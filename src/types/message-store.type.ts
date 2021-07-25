@@ -8,12 +8,7 @@ export type MessageStore = {
     message: Pick<Message, "id" | "type" | "data" | "metadata">,
     expectedVersion?: number
   ) => Promise<{ streamPosition: string }>;
-  getStreamMessages: (
-    streamName: string,
-    startingPosition?: number,
-    batchSize?: number,
-    condition?: string
-  ) => Promise<Message[]>;
+  getStreamMessages: (streamName: string, startingPosition?: number, batchSize?: number, condition?: string) => Promise<Message[]>;
   getCategoryMessages: (
     categoryName: string,
     startingPosition: number,
@@ -30,14 +25,22 @@ export type MessageStore = {
     handlers: {
       [key: string]: MessageHandlerFunc;
     },
-    options: { pollingInterval: number }
-    // startingPosition?: number,
-    // batchSize?: number,
-    // condition?: string
+    options: {
+      pollingInterval?: number;
+      startingPosition?: number;
+      retries?: number;
+      batchSize?: number;
+      condition?: string;
+    }
   ) => Promise<void>;
   project: <T>(
     streamName: string,
-    entityProjection: EntityProjection<T>
+    entityProjection: EntityProjection<T>,
+    options?: {
+      startingPosition?: number;
+      batchSize?: number;
+      condition?: string;
+    }
   ) => Promise<T>;
   disconnect: () => Promise<void>;
 };

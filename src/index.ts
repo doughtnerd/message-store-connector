@@ -1,1 +1,1 @@
-export * from "./message-db-client";
+export * from "./message-store/connect";

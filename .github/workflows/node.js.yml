@@ -28,6 +28,23 @@ jobs:
         cache: 'yarn'
     - run: yarn install --frozen-lockfile
     - run: yarn run build
+    - name: Archive Production Artifact Functions
+      uses: actions/upload-artifact@master
+      with:
+        name: package-dist
+        path: dist
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: package-dist
+          path: message-store-connector/
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
 
     # - run: npm ci
     # - run: npm run build --if-present

@@ -11,7 +11,7 @@
     "build": "tsc --project tsconfig.json",
     "test": "jest"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "index.js",
   "author": "Chris Carlson",
   "license": "MIT",

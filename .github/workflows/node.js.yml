@@ -38,13 +38,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
+      # - name: Checkout Repo
+      #   uses: actions/checkout@master
       - name: Download Artifact
         uses: actions/download-artifact@master
         with:
           name: package-dist
-          path: message-store-connector/
+          path: .
       - name: log files
         run: ls -lha
       - uses: JS-DevTools/npm-publish@v1

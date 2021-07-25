@@ -45,7 +45,6 @@ jobs:
           name: package-dist
           path: message-store-connector/
       - uses: JS-DevTools/npm-publish@v1
-        working-directory: message-store-connector
         with:
           access: public
           token: ${{ secrets.NPM_TOKEN }}

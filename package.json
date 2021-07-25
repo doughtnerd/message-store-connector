@@ -11,12 +11,12 @@
     "build": "tsc --project tsconfig.json",
     "test": "jest"
   },
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "dist/index.js",
   "author": "Chris Carlson",
   "license": "MIT",
   "private": false,
-  "types": "dist/types",
+  "types": "index.d.ts",
   "dependencies": {
     "pg": "^8.6.0",
     "promise-poller": "^1.9.1"

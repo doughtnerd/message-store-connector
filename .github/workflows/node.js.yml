@@ -32,7 +32,9 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: package-dist
-          path: dist
+          path: |
+            dist
+            package.json
 
   publish:
     runs-on: ubuntu-latest

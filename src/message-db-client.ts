@@ -267,6 +267,7 @@ export async function connect(
       entityProjection: EntityProjection<T>
       // @ts-ignore
     ) => project.call(null, client, streamName, entityProjection) as Promise<T>,
+    disconnect: () => client.end(),
   };
   return messageStore;
 }

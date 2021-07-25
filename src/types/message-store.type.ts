@@ -39,4 +39,5 @@ export type MessageStore = {
     streamName: string,
     entityProjection: EntityProjection<T>
   ) => Promise<T>;
+  disconnect: () => Promise<void>;
 };

@@ -4,7 +4,8 @@
   "keywords": [
     "Node",
     "Eventide",
-    "Message DB"
+    "Message DB",
+    "event-sourcing"
   ],
   "scripts": {
     "dev": "ts-node --project tsconfig.json src/index.ts",
@@ -12,7 +13,7 @@
     "test": "jest",
     "test:docker": "docker-compose -f docker-compose.test.yml up --build --exit-code-from package"
   },
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "dist/index.js",
   "author": "Chris Carlson",
   "license": "MIT",

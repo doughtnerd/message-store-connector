@@ -49,6 +49,7 @@ jobs:
           path: |
             dist
             package.json
+            README.md
 
   publish:
     runs-on: ubuntu-latest

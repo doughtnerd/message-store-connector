@@ -1,8 +1,8 @@
 export type Message = {
   id: string;
   type: string;
-  position: number;
-  global_position: number;
+  position: string;
+  globalPosition: string;
   data: Object;
   metadata: {
     correlationStreamName?: string;

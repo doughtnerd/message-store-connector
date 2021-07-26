@@ -23,24 +23,15 @@ export async function connect(config: MessageStoreConfig): Promise<MessageStore>
       getStreamMessages.call(null, client, streamName, startingPosition, batchSize, condition),
     getCategoryMessages: (
       categoryName: string,
-      startingPosition: number,
-      batchSize?: number,
-      correlation?: string,
-      consumerGroupMember?: string,
-      consumerGroupSize?: string,
-      condition?: string
-    ) =>
-      getCategoryMessages.call(
-        null,
-        client,
-        categoryName,
-        startingPosition,
-        batchSize,
-        correlation,
-        consumerGroupMember,
-        consumerGroupSize,
-        condition
-      ),
+      options?: {
+        startingPosition?: number;
+        batchSize?: number;
+        correlation?: string;
+        consumerGroupMember?: string;
+        consumerGroupSize?: string;
+        condition?: string;
+      }
+    ) => getCategoryMessages.call(null, client, categoryName, options),
     getLastStreamMessage: (streamName: string) => getLastStreamMessage.call(null, client, streamName),
     subscribeToStream: (
       subscriberId: string,
@@ -64,7 +55,7 @@ export async function connect(config: MessageStoreConfig): Promise<MessageStore>
         batchSize?: number;
         condition?: string;
       }
-    ) => project(client, streamName, entityProjection, options), //project.call(null, client, streamName, entityProjection) as Promise<T>,
+    ) => project(client, streamName, entityProjection, options),
     disconnect: () => client.end(),
   };
   return messageStore;

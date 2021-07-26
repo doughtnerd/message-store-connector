@@ -31,6 +31,25 @@ describe("Message Store Connector", () => {
     expect(message[0].id).toEqual(messageId);
   });
 
+  test("Can write several message and retrieve them", async () => {
+    const streamId = uuid();
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+    const messages = await messageStore.getStreamMessages(`testStream-${streamId}`);
+
+    expect(messages.length).toEqual(2);
+  });
+
   test("Calls the correct handler for a message type in a subscription", (done) => {
     const streamId = uuid();
     const messageId = uuid();
@@ -79,6 +98,29 @@ describe("Message Store Connector", () => {
     });
 
     expect(testEntity.timestamps.length).toEqual(1);
+  });
+
+  test("Projection gracefully continues if there's no matching handler for an event", async () => {
+    const streamId = uuid();
+    const messageId = uuid();
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: messageId,
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+      entity: { timestamps: [] },
+      projectionName: "Test Projection",
+      handlers: {
+        NonMatchingHandler: (entity: any, message: any) => {
+          fail();
+        },
+      },
+    });
+
+    expect(testEntity.timestamps.length).toEqual(0);
   });
 
   test("Projection can be ran against a stream with multiple messages in it", async () => {
@@ -158,6 +200,35 @@ describe("Message Store Connector", () => {
     );
 
     expect(testEntity.timestamps.length).toEqual(2);
+  });
+
+  test("Can write messages of the same category but different streams and retrieve them", async () => {
+    const uniqueCategory = `uniqueCategory${uuid().replace(/-/g, "")}`;
+    await messageStore.writeMessage(`${uniqueCategory}-${uuid()}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    const secondMessageStream = `${uniqueCategory}-${uuid()}`;
+    await messageStore.writeMessage(secondMessageStream, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    let messages = await messageStore.getCategoryMessages(uniqueCategory);
+
+    expect(messages.length).toEqual(2);
+
+    const lastMessage = await messageStore.getLastStreamMessage(secondMessageStream);
+    messages = await messageStore.getCategoryMessages(uniqueCategory, {
+      startingPosition: Number.parseInt(lastMessage[0].globalPosition),
+    });
+
+    expect(messages.length).toEqual(1);
   });
 
   afterAll(async () => {

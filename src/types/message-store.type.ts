@@ -11,12 +11,14 @@ export type MessageStore = {
   getStreamMessages: (streamName: string, startingPosition?: number, batchSize?: number, condition?: string) => Promise<Message[]>;
   getCategoryMessages: (
     categoryName: string,
-    startingPosition: number,
-    batchSize?: number,
-    correlation?: string,
-    consumerGroupMember?: string,
-    consumerGroupSize?: string,
-    condition?: string
+    options?: {
+      startingPosition?: number;
+      batchSize?: number;
+      correlation?: string;
+      consumerGroupMember?: string;
+      consumerGroupSize?: string;
+      condition?: string;
+    }
   ) => Promise<Message[]>;
   getLastStreamMessage: (streamName: string) => Promise<Message[]>;
   subscribeToStream: (

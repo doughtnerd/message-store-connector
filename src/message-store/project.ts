@@ -40,7 +40,7 @@ export async function project<T>(
   const parsedStreamVersion = Number.parseInt(latestStreamVersion.stream_version);
 
   while (startingPosition <= parsedStreamVersion) {
-    const messages = await getStreamMessages(client, streamName, startingPosition, batchSize, condition);
+    const messages = await getStreamMessages(client, streamName, { startingPosition, batchSize, condition });
     for (const message of messages) {
       entity = doProjection<T>(entity, message, entityProjection);
     }

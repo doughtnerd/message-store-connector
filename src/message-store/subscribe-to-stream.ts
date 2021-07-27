@@ -24,7 +24,7 @@ export async function subscribeToStream(
   let { startingPosition: position = 0 } = options;
 
   const poll = async () => {
-    const messages = await getStreamMessages(client, streamName, position, batchSize, condition);
+    const messages = await getStreamMessages(client, streamName, { startingPosition: position, batchSize, condition });
     position += messages.length;
 
     for (const message of messages) {

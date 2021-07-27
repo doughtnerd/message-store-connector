@@ -19,8 +19,14 @@ export async function connect(config: MessageStoreConfig): Promise<MessageStore>
   const messageStore: MessageStore = {
     writeMessage: (streamName: string, message: Pick<Message, "id" | "type" | "data" | "metadata">, expectedVersion?: number) =>
       writeMessage.call(null, client, streamName, message, expectedVersion),
-    getStreamMessages: (streamName: string, startingPosition?: number, batchSize?: number, condition?: string) =>
-      getStreamMessages.call(null, client, streamName, startingPosition, batchSize, condition),
+    getStreamMessages: (
+      streamName: string,
+      options?: {
+        startingPosition?: number;
+        batchSize?: number;
+        condition?: string;
+      }
+    ) => getStreamMessages.call(null, client, streamName, options),
     getCategoryMessages: (
       categoryName: string,
       options?: {

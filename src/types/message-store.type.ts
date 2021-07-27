@@ -8,7 +8,14 @@ export type MessageStore = {
     message: Pick<Message, "id" | "type" | "data" | "metadata">,
     expectedVersion?: number
   ) => Promise<{ streamPosition: string }>;
-  getStreamMessages: (streamName: string, startingPosition?: number, batchSize?: number, condition?: string) => Promise<Message[]>;
+  getStreamMessages: (
+    streamName: string,
+    options?: {
+      startingPosition?: number;
+      batchSize?: number;
+      condition?: string;
+    }
+  ) => Promise<Message[]>;
   getCategoryMessages: (
     categoryName: string,
     options?: {

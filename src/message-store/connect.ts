@@ -17,7 +17,7 @@ export async function connect(config: MessageStoreConfig): Promise<MessageStore>
   const client = await connectToMessageDB(messageStoreHost, messageStorePassword, logger);
 
   const messageStore: MessageStore = {
-    writeMessage: (streamName: string, message: Pick<Message, "id" | "type" | "data" | "metadata">, expectedVersion?: number) =>
+    writeMessage: <T>(streamName: string, message: Pick<Message<T>, "id" | "type" | "data" | "metadata">, expectedVersion?: number) =>
       writeMessage.call(null, client, streamName, message, expectedVersion),
     getStreamMessages: (
       streamName: string,

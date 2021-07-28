@@ -1,6 +1,11 @@
 import { Client } from "pg";
 import { Message } from "../types/message.type";
 
+/**
+ * Retrieve messages from a category of streams, optionally specifying the starting position, the number of messages to retrieve, the correlation category for Pub/Sub, consumer group parameters, and an additional condition that will be appended to the SQL command's WHERE clause.
+ *
+ * See {@link http://docs.eventide-project.org/user-guide/message-db/server-functions.html#get-messages-from-a-category Get Messages from a category}
+ */
 export async function getCategoryMessages(
   client: Client,
   categoryName: string,

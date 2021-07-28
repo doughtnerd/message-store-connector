@@ -1,8 +1,10 @@
+import { Client } from "pg";
 import promisePoller from "promise-poller";
 import { getStreamMessages } from "../message-db-client/get-stream-messages";
+import { loadStreamSubscriberPosition, saveStreamSubscriberPosition } from "../message-db-client/stream-subscriber-position";
+import { writeMessage } from "../message-db-client/write-message";
 import { NoopLogger } from "../noop-logger";
-import { MessageHandlerFunc } from "../types/message-handler.type";
-import { Client } from "pg";
+import { MessageHandlerContext, MessageHandlerFunc } from "../types/message-handler.type";
 
 export async function subscribeToStream(
   client: Client,
@@ -19,11 +21,19 @@ export async function subscribeToStream(
     batchSize?: number;
     condition?: string;
   }
-): Promise<void> {
-  const { pollingInterval = 1000, logger = NoopLogger, batchSize, condition, retries = 2 } = options;
-  let { startingPosition: position = 0 } = options;
+): Promise<{ unsubscribe: () => void }> {
+  const { pollingInterval = 1000, logger = NoopLogger, batchSize, condition, retries = 1 } = options;
+  let { startingPosition } = options;
 
-  const poll = async () => {
+  let position: number = await loadStreamSubscriberPosition(client, subscriberId, logger, startingPosition);
+
+  let shouldUnsubscribe = false;
+
+  let unsubscribe = () => {
+    shouldUnsubscribe = true;
+  };
+
+  const poll: () => Promise<any> | false = async () => {
     const messages = await getStreamMessages(client, streamName, { startingPosition: position, batchSize, condition });
     position += messages.length;
 
@@ -34,10 +44,13 @@ export async function subscribeToStream(
           logger,
           /* @ts-ignore */
           messageStore: this,
-        });
-        logger.log(`Successfully handled ${message.type}: ${successFullyHandled}`);
+          unsubscribe,
+        } as MessageHandlerContext);
       }
     }
+
+    await saveStreamSubscriberPosition(client, subscriberId, position, logger);
+    return true;
   };
 
   const poller = promisePoller({
@@ -45,7 +58,17 @@ export async function subscribeToStream(
     interval: pollingInterval,
     name: `${subscriberId} Poll to ${streamName}`,
     retries,
+    shouldContinue: (reason, resolvedValue) => {
+      if (shouldUnsubscribe) return false;
+      return resolvedValue ? true : false;
+    },
   });
 
-  return poller.then();
+  poller.then().catch((e) => {
+    if (e instanceof Array) {
+      logger.log("Subscription Closed");
+    }
+  });
+
+  return { unsubscribe };
 }

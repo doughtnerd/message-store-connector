@@ -3,9 +3,9 @@ import { MessageHandlerFunc } from "./message-handler.type";
 import { Message } from "./message.type";
 
 export type MessageStore = {
-  writeMessage: (
+  writeMessage: <T>(
     streamName: string,
-    message: Pick<Message, "id" | "type" | "data" | "metadata">,
+    message: Pick<Message<T>, "id" | "type" | "data" | "metadata">,
     expectedVersion?: number
   ) => Promise<{ streamPosition: string }>;
   getStreamMessages: (
@@ -41,7 +41,7 @@ export type MessageStore = {
       batchSize?: number;
       condition?: string;
     }
-  ) => Promise<void>;
+  ) => Promise<{ unsubscribe: () => void }>;
   project: <T>(
     streamName: string,
     entityProjection: EntityProjection<T>,

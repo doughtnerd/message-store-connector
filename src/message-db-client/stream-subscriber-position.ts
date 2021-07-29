@@ -14,10 +14,10 @@ export async function loadStreamSubscriberPosition(
   defaultPosition: number = 0
 ): Promise<number> {
   const subscriptionPositionStream = `${SUBSCRIBER_POSITION_STREAM_CATEGORY}-${subscriberId}`;
-  const lastMessage = (await getLastStreamMessage(client, subscriptionPositionStream)) as Message<{ streamPosition: number }>[];
+  const [lastMessage] = (await getLastStreamMessage(client, subscriptionPositionStream)) as Message<{ streamPosition: number }>[];
 
-  const position = lastMessage[0]?.data.streamPosition;
-  if (position) {
+  if (lastMessage) {
+    const position = lastMessage.data.streamPosition;
     logger.log(`Successfully loaded position: ${position} for subscriber: ${subscriberId}`);
     return position;
   } else {
@@ -27,10 +27,12 @@ export async function loadStreamSubscriberPosition(
 }
 
 export async function saveStreamSubscriberPosition(client: Client, subscriberId: string, newPosition: number, logger: Logger) {
-  await writeMessage(client, `${SUBSCRIBER_POSITION_STREAM_CATEGORY}-${subscriberId}`, {
+  await writeMessage<{ streamPosition: number }, "PositionAdvanced">(client, `${SUBSCRIBER_POSITION_STREAM_CATEGORY}-${subscriberId}`, {
     id: uuid(),
     type: "PositionAdvanced",
-    data: { streamPosition: newPosition },
+    data: {
+      streamPosition: newPosition,
+    },
     metadata: {},
   });
 }

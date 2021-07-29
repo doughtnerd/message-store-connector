@@ -2,7 +2,6 @@ import { Client } from "pg";
 import promisePoller from "promise-poller";
 import { getStreamMessages } from "../message-db-client/get-stream-messages";
 import { loadStreamSubscriberPosition, saveStreamSubscriberPosition } from "../message-db-client/stream-subscriber-position";
-import { writeMessage } from "../message-db-client/write-message";
 import { NoopLogger } from "../noop-logger";
 import { MessageHandlerContext, MessageHandlerFunc } from "../types/message-handler.type";
 
@@ -33,7 +32,7 @@ export async function subscribeToStream(
     shouldUnsubscribe = true;
   };
 
-  const poll: () => Promise<any> | false = async () => {
+  const poll: () => Promise<boolean> = async () => {
     const messages = await getStreamMessages(client, streamName, { startingPosition: position, batchSize, condition });
     position += messages.length;
 
@@ -64,9 +63,12 @@ export async function subscribeToStream(
     },
   });
 
+  // This is kinda weird check logic that needs to happen for promisePoller library on cancelled subscriptions
   poller.then().catch((e) => {
     if (e instanceof Array) {
       logger.log("Subscription Closed");
+    } else {
+      throw e;
     }
   });
 

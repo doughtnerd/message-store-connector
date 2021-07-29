@@ -1,7 +1,7 @@
 import { Client } from "pg";
 
-export async function getStreamVersion(client: Client, streamName: string): Promise<{ stream_version: string }> {
-  const query = `SELECT * FROM stream_version($1);`;
+export async function getStreamVersion(client: Client, streamName: string): Promise<{ streamVersion: number | null }> {
+  const query = `SELECT stream_version::int AS "streamVersion" FROM stream_version($1);`;
 
   const result = await client.query(query, [streamName]);
 

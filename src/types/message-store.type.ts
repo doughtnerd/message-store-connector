@@ -2,21 +2,21 @@ import { EntityProjection } from "./entity-projection.type";
 import { MessageHandlerFunc } from "./message-handler.type";
 import { Message } from "./message.type";
 
-export type MessageStore = {
-  writeMessage: <T>(
+export interface MessageStore {
+  writeMessage<T>(
     streamName: string,
     message: Pick<Message<T>, "id" | "type" | "data" | "metadata">,
     expectedVersion?: number
-  ) => Promise<{ streamPosition: string }>;
-  getStreamMessages: (
+  ): Promise<{ streamPosition: string }>;
+  getStreamMessages(
     streamName: string,
     options?: {
       startingPosition?: number;
       batchSize?: number;
       condition?: string;
     }
-  ) => Promise<Message[]>;
-  getCategoryMessages: (
+  ): Promise<Message[]>;
+  getCategoryMessages(
     categoryName: string,
     options?: {
       startingPosition?: number;
@@ -26,9 +26,9 @@ export type MessageStore = {
       consumerGroupSize?: string;
       condition?: string;
     }
-  ) => Promise<Message[]>;
-  getLastStreamMessage: (streamName: string) => Promise<Message[]>;
-  subscribeToStream: (
+  ): Promise<Message[]>;
+  getLastStreamMessage(streamName: string): Promise<Message[]>;
+  subscribeToStream(
     subscriberId: string,
     streamName: string,
     handlers: {
@@ -41,8 +41,8 @@ export type MessageStore = {
       batchSize?: number;
       condition?: string;
     }
-  ) => Promise<{ unsubscribe: () => void }>;
-  project: <T>(
+  ): Promise<{ unsubscribe: () => void }>;
+  project<T>(
     streamName: string,
     entityProjection: EntityProjection<T>,
     options?: {
@@ -50,6 +50,6 @@ export type MessageStore = {
       batchSize?: number;
       condition?: string;
     }
-  ) => Promise<T>;
-  disconnect: () => Promise<void>;
-};
+  ): Promise<T>;
+  disconnect(): Promise<void>;
+}

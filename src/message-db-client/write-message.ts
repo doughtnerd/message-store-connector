@@ -1,10 +1,10 @@
 import { Client } from "pg";
 import { Message } from "../types/message.type";
 
-export async function writeMessage(
+export async function writeMessage<T = {}, K extends string = string>(
   client: Client,
   streamName: string,
-  message: Pick<Message, "id" | "type" | "data" | "metadata">,
+  message: Pick<Message<T, K>, "id" | "type" | "data" | "metadata">,
   expectedVersion?: number
 ): Promise<{ streamPosition: string }> {
   const { id, type, data, metadata } = message;

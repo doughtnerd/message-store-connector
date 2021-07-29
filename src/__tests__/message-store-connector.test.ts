@@ -70,7 +70,7 @@ describe("Message Store Connector", () => {
       })
       .then(() => {
         messageStore.subscribeToStream(
-          "abc",
+          uuid(),
           `testStream-${streamId}`,
           {
             TestEvent: (message: Message, context: any) => {
@@ -107,7 +107,7 @@ describe("Message Store Connector", () => {
     });
 
     messageStore.subscribeToStream(
-      "3c7f50b5-51c6-4284-95fb-d93dc38cb262",
+      uuid(),
       streamOne,
       {
         TestEvent: (message: Message, context: any) => {
@@ -119,7 +119,7 @@ describe("Message Store Connector", () => {
     );
 
     messageStore.subscribeToStream(
-      "f41bb05a-2cca-4247-8462-178388b88a6d",
+      uuid(),
       streamTwo,
       {
         TestEvent: (message: Message, context: any) => {
@@ -142,28 +142,21 @@ describe("Message Store Connector", () => {
     expect(fakeFunc).toHaveBeenCalledTimes(3);
   });
 
-  test("Can unsubscribe from a stream subscription through message context", async () => {
+  test("Can unsubscribe from unsubscribe handler returned from the subscribe func", async () => {
     const streamId = uuid();
     const mockFunc = jest.fn();
 
-    messageStore.subscribeToStream(
-      "abc",
+    const { unsubscribe } = await messageStore.subscribeToStream(
+      uuid(),
       `testStream-${streamId}`,
       {
         TestEvent: (message: Message, context: any) => {
           mockFunc();
-          context.unsubscribe();
           return Promise.resolve(true);
         },
       },
-      { pollingInterval: 500 }
+      { pollingInterval: 100 }
     );
-    await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: uuid(),
-      type: "TestEvent",
-      data: {},
-      metadata: {},
-    });
 
     await messageStore.writeMessage(`testStream-${streamId}`, {
       id: uuid(),
@@ -172,9 +165,67 @@ describe("Message Store Connector", () => {
       metadata: {},
     });
 
-    await wait(3000);
+    await wait(300);
+    unsubscribe();
+    await wait(300);
+
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    await wait(1000);
 
     expect(mockFunc).toHaveBeenCalledTimes(1);
+  });
+
+  test("Can unsubscribe and resubscribe and load the correct stream position", async () => {
+    const streamId = uuid();
+    const mockFunc = jest.fn();
+    const mockFunc2 = jest.fn();
+    const subscriberId = uuid();
+
+    const { unsubscribe } = await messageStore.subscribeToStream(
+      subscriberId,
+      `testStream-${streamId}`,
+      {
+        TestEvent: (message: Message, context: any) => {
+          mockFunc();
+          return Promise.resolve(true);
+        },
+      },
+      { pollingInterval: 100 }
+    );
+
+    await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    await wait(300);
+    unsubscribe();
+    await wait(300);
+
+    await messageStore.subscribeToStream(
+      subscriberId,
+      `testStream-${streamId}`,
+      {
+        TestEvent: (message: Message, context: any) => {
+          mockFunc2();
+          return Promise.resolve(true);
+        },
+      },
+      { pollingInterval: 100 }
+    );
+
+    await wait(1000);
+
+    expect(mockFunc).toHaveBeenCalledTimes(1);
+    expect(mockFunc2).toHaveBeenCalledTimes(0);
   });
 
   test("Projection can be ran against a stream with one message in it", async () => {
@@ -326,7 +377,7 @@ describe("Message Store Connector", () => {
 
     const lastMessage = await messageStore.getLastStreamMessage(secondMessageStream);
     messages = await messageStore.getCategoryMessages(uniqueCategory, {
-      startingPosition: Number.parseInt(lastMessage[0].globalPosition),
+      startingPosition: lastMessage[0].globalPosition,
     });
 
     expect(messages.length).toEqual(1);

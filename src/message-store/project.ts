@@ -33,11 +33,11 @@ export async function project<T>(
 
   const latestStreamVersion = await getStreamVersion(client, streamName);
 
-  if (latestStreamVersion.stream_version === null) {
+  if (latestStreamVersion.streamVersion === null) {
     return entity;
   }
 
-  const parsedStreamVersion = Number.parseInt(latestStreamVersion.stream_version);
+  const parsedStreamVersion = latestStreamVersion.streamVersion;
 
   while (startingPosition <= parsedStreamVersion) {
     const messages = await getStreamMessages(client, streamName, { startingPosition, batchSize, condition });

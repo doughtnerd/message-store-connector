@@ -24,6 +24,7 @@ jobs:
           cache: 'yarn'
       - run: yarn install --frozen-lockfile
       - run: yarn run test-coverage:docker
+      - run: ls -lha
       - name: Jest badges generation action
         uses: jpb06/jest-badges-action@v1.6.0
         with:

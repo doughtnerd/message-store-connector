@@ -26,8 +26,8 @@ jobs:
       - run: yarn run test-coverage:docker
       - name: Generating coverage badges
         uses: actions/jest-badges-action@latest
-          with:
-            branches: master
+        with:
+          branches: master
 
   build:
     needs: test

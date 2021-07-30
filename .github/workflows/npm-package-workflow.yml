@@ -25,7 +25,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn run test-coverage:docker
       - name: Generating coverage badges
-        uses: actions/jest-badges-action@latest
+        uses: jpb06/jest-badges-action@latest
         with:
           branches: master
 

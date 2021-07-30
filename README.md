@@ -1,3 +1,7 @@
+[![npm version](https://badge.fury.io/js/%40doughtnerd%2Fmessage-store-connector.svg)](https://badge.fury.io/js/%40doughtnerd%2Fmessage-store-connector)
+
+![Build and Deploy Workflow](https://github.com/doughtnerd/message-store-connector/actions/workflows/npm-package-workflow.yml/badge.svg)
+
 # Message Store Connector
 These docs are under active development, as the library develops, better docs will be added.
 

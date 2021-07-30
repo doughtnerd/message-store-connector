@@ -1,7 +1,7 @@
 version: "3.7"
 
 services: 
-  package:
+  unit:
     image: doughtnerd/message-store-connector:dev
     build:
       context: .
@@ -10,6 +10,24 @@ services:
       - message_store
     command: "./bin/wait-for-it.sh message_store:5432 --timeout=60 -- npm run test"
     env_file: .env
+    depends_on: 
+      - message_store
+    volumes: 
+      - ./coverage:/coverage
+
+  coverage:
+    image: doughtnerd/message-store-connector:dev
+    build:
+      context: .
+      target: dev
+    links:
+      - message_store
+    command: "./bin/wait-for-it.sh message_store:5432 --timeout=60 -- npm run test-coverage"
+    env_file: .env
+    depends_on: 
+      - message_store
+    volumes: 
+      - ./coverage:/usr/src/coverage/
     
   message_store:
     container_name: message_store

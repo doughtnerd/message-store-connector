@@ -3,6 +3,7 @@
 ![Global Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-global%20coverage.svg)
 ![Function Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-functions.svg)
 ![Branch Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-branches.svg)
+![Lines Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-lines.svg)
 ![Statement Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-statements.svg)
 
 # Message Store Connector

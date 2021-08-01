@@ -2,6 +2,9 @@
 
 ![Build and Deploy Workflow](https://github.com/doughtnerd/message-store-connector/actions/workflows/npm-package-workflow.yml/badge.svg)
 
+
+![Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-branches.svg)
+
 # Message Store Connector
 These docs are under active development, as the library develops, better docs will be added.
 

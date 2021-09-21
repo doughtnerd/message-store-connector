@@ -1,3 +1,6 @@
+# Message Store Connector
+These docs are under active development, as the library develops, better docs will be added.
+
 ![Build and Deploy Workflow](https://github.com/doughtnerd/message-store-connector/actions/workflows/npm-package-workflow.yml/badge.svg)
 
 [![npm version](https://badge.fury.io/js/%40doughtnerd%2Fmessage-store-connector.svg)](https://badge.fury.io/js/%40doughtnerd%2Fmessage-store-connector)
@@ -7,9 +10,6 @@
 ![Branch Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-branches.svg)
 ![Lines Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-lines.svg)
 ![Statement Coverage](https://github.com/doughtnerd/message-store-connector/blob/master/badges/coverage-statements.svg)
-
-# Message Store Connector
-These docs are under active development, as the library develops, better docs will be added.
 
 ## What is it?
 NodeJS library to connect to and operate on [Eventide Project's](http://docs.eventide-project.org/) [Message DB](http://docs.eventide-project.org/user-guide/message-db/).

@@ -11,6 +11,7 @@ import { MessageStore } from "../types/message-store.type";
 import { Message } from "../types/message.type";
 import { project } from "./project";
 import { subscribeToStream } from "./subscribe-to-stream";
+import { subscribeToCategory } from "./subscribe-to-category";
 
 export async function connect(config: MessageStoreConfig): Promise<MessageStore> {
   const { messageStoreHost, messageStorePassword, logger = NoopLogger } = config;
@@ -53,6 +54,23 @@ export async function connect(config: MessageStoreConfig): Promise<MessageStore>
         condition?: string;
       }
     ) => subscribeToStream.call(messageStore, client, subscriberId, streamName, handlers, { ...options, logger: logger }),
+    subscribeToCategory: (
+      subscriberId: string,
+      streamName: string,
+      handlers: {
+        [key: string]: MessageHandlerFunc;
+      },
+      options: {
+        pollingInterval?: number;
+        retries?: number;
+        startingPosition?: number;
+        batchSize?: number;
+        condition?: string;
+        correlation?: string;
+        consumerGroupMember?: string;
+        consumerGroupSize?: string;
+      }
+    ) => subscribeToCategory.call(messageStore, client, subscriberId, streamName, handlers, { ...options, logger: logger }),
     project: <T>(
       streamName: string,
       entityProjection: EntityProjection<T>,

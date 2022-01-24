@@ -69,9 +69,37 @@ describe("Message Store Connector", () => {
         metadata: {},
       })
       .then(() => {
-        messageStore.subscribeToStream(
+        return messageStore.subscribeToStream(
           uuid(),
           `testStream-${streamId}`,
+          {
+            TestEvent: (message: Message, context: any) => {
+              expect(message.id).toEqual(messageId);
+              done();
+              return Promise.resolve(true);
+            },
+          },
+          { pollingInterval: 500 }
+        );
+      })
+  });
+
+  test("Calls the correct handler for a message type in a category subscription", (done) => {
+    const streamId = uuid();
+    const messageId = uuid();
+    const uniqueCategory = uuid().replace('/\-/g', '')
+
+      messageStore
+      .writeMessage(`${uniqueCategory}:command-${streamId}`, {
+        id: messageId,
+        type: "TestEvent",
+        data: {},
+        metadata: {},
+      })
+      .then(() => {
+        messageStore.subscribeToCategory(
+          uuid(),
+          `${uniqueCategory}:command`,
           {
             TestEvent: (message: Message, context: any) => {
               expect(message.id).toEqual(messageId);
@@ -170,6 +198,46 @@ describe("Message Store Connector", () => {
     await wait(300);
 
     await messageStore.writeMessage(`testStream-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    await wait(1000);
+
+    expect(mockFunc).toHaveBeenCalledTimes(1);
+  });
+
+  test("Can unsubscribe from unsubscribe handler returned from the category subscribe func", async () => {
+    const streamId = uuid();
+    const mockFunc = jest.fn();
+    const uniqueCategory = uuid().replace(/\-/g, '');
+
+    const { unsubscribe } = await messageStore.subscribeToCategory(
+      uuid(),
+      `${uniqueCategory}:command`,
+      {
+        TestEvent: (message: Message, context: any) => {
+          mockFunc();
+          return Promise.resolve(true);
+        },
+      },
+      { pollingInterval: 100 }
+    );
+
+    await messageStore.writeMessage(`${uniqueCategory}:command-${streamId}`, {
+      id: uuid(),
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    await wait(500);
+    unsubscribe();
+    await wait(300);
+
+    await messageStore.writeMessage(`${uniqueCategory}-${streamId}`, {
       id: uuid(),
       type: "TestEvent",
       data: {},

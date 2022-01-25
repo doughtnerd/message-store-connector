@@ -49,9 +49,9 @@ export async function subscribeToCategory(
         } as MessageHandlerContext);
       }
       position = message.globalPosition + 1;
+      await saveStreamSubscriberPosition(client, subscriberId, position, logger);
     }
 
-    await saveStreamSubscriberPosition(client, subscriberId, position, logger);
     return true;
   };
 

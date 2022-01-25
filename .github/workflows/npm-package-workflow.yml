@@ -17,18 +17,11 @@ jobs:
         node-version: [12.x]
     steps:
       - uses: actions/checkout@v2
-      # - name: Use Node.js ${{ matrix.node-version }}
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version: ${{ matrix.node-version }}
-      #     cache: 'yarn'
-      # - run: yarn install --frozen-lockfile
       - run: yarn run test-coverage:docker
-      - run: ls -lha coverage
-      - name: Jest badges generation action
-        uses: jpb06/jest-badges-action@v1.6.0
-        with:
-          branches: master
+      # - name: Jest badges generation action
+        # uses: jpb06/jest-badges-action@latest
+        # with:
+        #   branches: master
 
   build:
     needs: test

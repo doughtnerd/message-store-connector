@@ -84,13 +84,13 @@ describe("Message Store Connector", () => {
       })
   });
 
-  test("Calls the correct handler for a message type in a category subscription", (done) => {
+  test.only("Calls the correct handler for a message type in a category subscription", (done) => {
     const streamId = uuid();
     const messageId = uuid();
     const uniqueCategory = uuid().replace('/\-/g', '')
 
       messageStore
-      .writeMessage(`${uniqueCategory}:command-${streamId}`, {
+      .writeMessage(`testCategorySub${uniqueCategory}:command-${streamId}`, {
         id: messageId,
         type: "TestEvent",
         data: {},
@@ -99,16 +99,21 @@ describe("Message Store Connector", () => {
       .then(() => {
         messageStore.subscribeToCategory(
           uuid(),
-          `${uniqueCategory}:command`,
+          `testCategorySub${uniqueCategory}:command`,
           {
             TestEvent: (message: Message, context: any) => {
+              console.log(message.id, message)
               expect(message.id).toEqual(messageId);
-              done();
+              // done();
               return Promise.resolve(true);
             },
           },
           { pollingInterval: 500 }
         );
+      }).then(() => {
+        done()
+      }).catch(err => {
+        fail(err)
       });
   });
 

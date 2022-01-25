@@ -42,6 +42,23 @@ export interface MessageStore {
       condition?: string;
     }
   ): Promise<{ unsubscribe: () => void }>;
+  subscribeToCategory(
+    subscriberId: string,
+    streamName: string,
+    handlers: {
+      [key: string]: MessageHandlerFunc;
+    },
+    options: {
+      pollingInterval?: number;
+      retries?: number;
+      startingPosition?: number;
+      batchSize?: number;
+      condition?: string;
+      correlation?: string;
+      consumerGroupMember?: string;
+      consumerGroupSize?: string;
+    }
+  ): Promise<{ unsubscribe: () => void }>;
   project<T>(
     streamName: string,
     entityProjection: EntityProjection<T>,

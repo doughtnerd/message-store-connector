@@ -59,7 +59,7 @@ jobs:
           name: package-dist
           path: .
       - name: log files
-        run: ls -lha
+        run: ls -lha dist
       - uses: JS-DevTools/npm-publish@v1
         with:
           access: public

@@ -48,7 +48,6 @@ export async function subscribeToCategory(
           unsubscribe,
         } as MessageHandlerContext);
       }
-      console.log(message)
       position = message.globalPosition + 1;
     }
 

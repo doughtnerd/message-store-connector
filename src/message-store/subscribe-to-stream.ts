@@ -45,10 +45,8 @@ export async function subscribeToStream(
           unsubscribe,
         } as MessageHandlerContext);
       }
-    }
-
-    if (messages.length) {
-      await saveStreamSubscriberPosition(client, subscriberId, position + messages.length, logger);
+      position = message.globalPosition + 1;
+      await saveStreamSubscriberPosition(client, subscriberId, position, logger);
     }
 
     return true;

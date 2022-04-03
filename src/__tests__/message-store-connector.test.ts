@@ -236,7 +236,7 @@ describe("Message Store Connector", () => {
       metadata: {},
     });
 
-    await wait(500);
+    await wait(300);
     unsubscribe();
     await wait(300);
 

@@ -84,32 +84,35 @@ describe("Message Store Connector", () => {
       })
   });
 
-  test("Calls the correct handler for a message type in a category subscription", (done) => {
+  test("Calls the correct handler for a message type in a category subscription", async () => {
     const streamId = uuid();
     const messageId = uuid();
     const uniqueCategory = uuid().replace(/\-/g, '')
+    const fakeFunc = jest.fn()
 
-      messageStore
-      .writeMessage(`testCategorySub${uniqueCategory}:command-${streamId}`, {
-        id: messageId,
-        type: "TestEvent",
-        data: {},
-        metadata: {},
-      })
-      .then(() => {
-        messageStore.subscribeToCategory(
-          uuid(),
-          `testCategorySub${uniqueCategory}:command`,
-          {
-            TestEvent: (message: Message, context: any) => {
-              expect(message.id).toEqual(messageId);
-              done();
-              return Promise.resolve(true);
-            },
-          },
-          { pollingInterval: 500 }
-        );
-      });
+    await messageStore.writeMessage(`testCategorySub${uniqueCategory}:command-${streamId}`, {
+      id: messageId,
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    })
+
+    messageStore.subscribeToCategory(
+      uuid(),
+      `testCategorySub${uniqueCategory}:command`,
+      {
+        TestEvent: (message: Message, context: any) => {
+          expect(message.id).toEqual(messageId);
+          fakeFunc()
+          return Promise.resolve(true);
+        },
+      },
+      { pollingInterval: 500 }
+    );
+
+    await wait(1000)
+
+    expect(fakeFunc).toHaveBeenCalled()
   });
 
   test("Can have subscriptions to multiple streams at a time", async () => {

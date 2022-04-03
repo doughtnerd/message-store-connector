@@ -17,7 +17,7 @@ jobs:
         node-version: [12.x]
     steps:
       - uses: actions/checkout@v2
-      - run: yarn run test-coverage:docker
+      - run: npm run test-coverage:docker
       # - name: Jest badges generation action
         # uses: jpb06/jest-badges-action@latest
         # with:
@@ -37,9 +37,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-      - run: yarn install --frozen-lockfile
-      - run: yarn run build
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build
       - name: Archive Production Artifact Functions
         uses: actions/upload-artifact@master
         with:

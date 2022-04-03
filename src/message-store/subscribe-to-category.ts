@@ -37,7 +37,6 @@ export async function subscribeToCategory(
 
   const poll: () => Promise<boolean> = async () => {
     const messages = await getCategoryMessages(client, streamName, { startingPosition: position, ...remainingOptions });
-
     for (const message of messages) {
       if (Object.prototype.hasOwnProperty.call(handlers, message.type)) {
         const handler = handlers[message.type];
@@ -48,7 +47,6 @@ export async function subscribeToCategory(
           unsubscribe,
         } as MessageHandlerContext);
       }
-      console.log(message)
       position = message.globalPosition + 1;
     }
 

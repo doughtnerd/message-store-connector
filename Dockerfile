@@ -4,8 +4,8 @@ WORKDIR /usr/src
 
 FROM base as dependencies
 COPY package.json .
-COPY yarn.lock .
-RUN yarn install
+COPY package-lock.json .
+RUN npm install --no-audit --prefer-offline
 
 FROM dependencies AS dev
 COPY . .

@@ -18,14 +18,14 @@
     "test:docker": "docker-compose -f docker-compose.test.yml up --build unit",
     "test-coverage:docker": "docker-compose -f docker-compose.test.yml up --build --exit-code-from coverage coverage"
   },
-  "version": "0.0.19",
+  "version": "0.20.5",
   "main": "dist/index.js",
   "author": "Chris Carlson",
   "license": "MIT",
   "private": false,
   "types": "dist/index.d.ts",
   "files": [
-    ""
+    "*"
   ],
   "dependencies": {
     "pg": "^8.7.3",

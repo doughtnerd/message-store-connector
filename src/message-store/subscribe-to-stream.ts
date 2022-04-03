@@ -34,7 +34,6 @@ export async function subscribeToStream(
 
   const poll: () => Promise<boolean> = async () => {
     const messages = await getStreamMessages(client, streamName, { startingPosition: position, batchSize, condition });
-    position += messages.length;
 
     for (const message of messages) {
       if (Object.prototype.hasOwnProperty.call(handlers, message.type)) {
@@ -48,7 +47,10 @@ export async function subscribeToStream(
       }
     }
 
-    await saveStreamSubscriberPosition(client, subscriberId, position, logger);
+    if (messages.length) {
+      await saveStreamSubscriberPosition(client, subscriberId, position + messages.length, logger);
+    }
+
     return true;
   };
 

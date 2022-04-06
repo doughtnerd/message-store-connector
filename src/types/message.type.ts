@@ -3,6 +3,7 @@ export type Message<T extends Object = {}, K extends string = string> = {
   type: K;
   position: number;
   globalPosition: number;
+  streamName: string;
   data: T;
   metadata: {
     correlationStreamName?: string;

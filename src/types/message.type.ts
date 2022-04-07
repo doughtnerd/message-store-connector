@@ -6,6 +6,7 @@ export type Message<T extends Object = {}, K extends string = string> = {
   streamName: string;
   data: T;
   metadata: {
+    replyStreamName?: string;
     correlationStreamName?: string;
     traceId?: string;
     userId?: string;

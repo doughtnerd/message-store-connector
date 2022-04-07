@@ -12,6 +12,7 @@ import { Message } from "../types/message.type";
 import { project } from "./project";
 import { subscribeToStream } from "./subscribe-to-stream";
 import { subscribeToCategory } from "./subscribe-to-category";
+import { projectCategory } from "./project-category";
 
 export async function connect(config: MessageStoreConfig): Promise<MessageStore> {
   const { messageStoreHost, messageStorePassword, logger = NoopLogger } = config;
@@ -80,6 +81,18 @@ export async function connect(config: MessageStoreConfig): Promise<MessageStore>
         condition?: string;
       }
     ) => project(client, streamName, entityProjection, options),
+    projectCategory: <T>(
+      categoryName: string,
+      entityProjection: EntityProjection<T>,
+      options?: {
+        startingPosition?: number;
+        batchSize?: number;
+        correlation?: string;
+        consumerGroupMember?: string;
+        consumerGroupSize?: string;
+        condition?: string;
+      }
+    ) => projectCategory(client, categoryName, entityProjection, options),
     disconnect: () => client.end(),
   };
   return messageStore;

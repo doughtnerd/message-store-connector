@@ -68,5 +68,17 @@ export interface MessageStore {
       condition?: string;
     }
   ): Promise<T>;
+  projectCategory: <T>(
+    categoryName: string,
+    entityProjection: EntityProjection<T>,
+    options?: {
+      startingPosition?: number;
+      batchSize?: number;
+      correlation?: string;
+      consumerGroupMember?: string;
+      consumerGroupSize?: string;
+      condition?: string;
+    }
+  ) => Promise<T>;
   disconnect(): Promise<void>;
 }

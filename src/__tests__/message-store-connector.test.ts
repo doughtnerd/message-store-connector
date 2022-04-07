@@ -299,6 +299,41 @@ describe("Message Store Connector", () => {
     expect(mockFunc2).toHaveBeenCalledTimes(0);
   });
 
+  test("Projection can be ran against category", async () => {
+    const uniqueCategory = `uniqueCategory${uuid().replace(/-/g, "")}`;
+    const streamId = uuid();
+    const streamId2 = uuid();
+    const messageId = uuid();
+    const messageId2 = uuid();
+    
+    await messageStore.writeMessage(`${uniqueCategory}-${streamId}`, {
+      id: messageId,
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    await messageStore.writeMessage(`${uniqueCategory}-${streamId2}`, {
+      id: messageId2,
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    });
+
+    const testEntity = await messageStore.projectCategory(uniqueCategory, {
+      entity: { timestamps: [] },
+      projectionName: "Test Projection",
+      handlers: {
+        TestEvent: (entity: any, message: any) => {
+          entity.timestamps.push(message.time);
+          return entity;
+        },
+      },
+    });
+
+    expect(testEntity.timestamps.length).toEqual(2);
+  });
+
   test("Projection can be ran against a stream with one message in it", async () => {
     const streamId = uuid();
     const messageId = uuid();

@@ -15,8 +15,8 @@ import { subscribeToCategory } from "./subscribe-to-category";
 import { projectCategory } from "./project-category";
 
 export async function connect(config: MessageStoreConfig): Promise<MessageStore> {
-  const { messageStoreHost, messageStorePassword, logger = NoopLogger } = config;
-  const client = await connectToMessageDB(messageStoreHost, messageStorePassword, logger);
+  const { connectionString, logger = NoopLogger } = config;
+  const client = await connectToMessageDB({ connectionString, logger })
 
   const messageStore: MessageStore = {
     writeMessage: <T>(streamName: string, message: Pick<Message<T>, "id" | "type" | "data" | "metadata">, expectedVersion?: number) =>

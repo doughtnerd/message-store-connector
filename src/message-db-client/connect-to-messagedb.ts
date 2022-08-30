@@ -1,15 +1,25 @@
 import { Client } from "pg";
 
-export async function connectToMessageDB(messageStoreHost: string, messageStorePassword: string, logger: any): Promise<Client> {
-  const client = new Client({
-    connectionString: `postgres://postgres:${messageStorePassword}@${messageStoreHost}:5432/message_store`,
-  });
+export type ConnectionConfig = {
+    connectionString: string
+    logger: any
+}
 
-  await client.connect();
-  await client.query("SET search_path TO message_store");
+export function createStandardConfigString(host: string, password: string, port: number = 5432): string {
+    return `postgres://postgres:${password}@${host}:${port}/message_store`
+}
 
-  const successMessage = `Successfully connected to message store database: ${client.database}`;
-  logger.log(successMessage);
+export async function connectToMessageDB(config: ConnectionConfig): Promise<Client> {
+    const client = new Client({
+        connectionString: config.connectionString,
+        connectionTimeoutMillis: 1000
+    });
 
-  return client;
+    await client.connect();
+    await client.query("SET search_path TO message_store");
+
+    const successMessage = `Successfully connected to message store database: ${client.database}`;
+    config.logger.debug(successMessage);
+
+    return client;
 }

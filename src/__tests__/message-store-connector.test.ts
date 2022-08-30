@@ -4,6 +4,7 @@ import { MessageStore } from "../types/message-store.type";
 import { Message } from "../types/message.type";
 import { NoopLogger } from "../noop-logger";
 import { connect } from "../message-store/connect";
+import { createStandardConfigString } from "../message-db-client/connect-to-messagedb";
 
 const wait = (forMillis: number) =>
   new Promise<void>((resolve, reject) => {
@@ -14,11 +15,16 @@ const wait = (forMillis: number) =>
   });
 
 describe("Message Store Connector", () => {
+  const connectionString = createStandardConfigString(
+    process.env.MESSAGE_STORE_HOST as string, 
+    process.env.MESSAGE_STORE_PASSWORD as string
+  )
+
   const messageStoreConfig: MessageStoreConfig = {
-    messageStoreHost: process.env.MESSAGE_STORE_HOST as string,
-    messageStorePassword: process.env.MESSAGE_STORE_PASSWORD as string,
+    connectionString,
     logger: NoopLogger,
   };
+  
   let messageStore: MessageStore;
 
   beforeAll(async () => {

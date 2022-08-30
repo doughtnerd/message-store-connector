@@ -59,18 +59,18 @@ export interface MessageStore {
       consumerGroupSize?: string;
     }
   ): Promise<{ unsubscribe: () => void }>;
-  project<T>(
+  project<EntityType>(
     streamName: string,
-    entityProjection: EntityProjection<T>,
+    entityProjection: EntityProjection<EntityType, any, any>,
     options?: {
       startingPosition?: number;
       batchSize?: number;
       condition?: string;
     }
-  ): Promise<T>;
-  projectCategory: <T>(
+  ): Promise<EntityType>;
+  projectCategory: <EntityType>(
     categoryName: string,
-    entityProjection: EntityProjection<T>,
+    entityProjection: EntityProjection<EntityType, any, any>,
     options?: {
       startingPosition?: number;
       batchSize?: number;
@@ -79,6 +79,6 @@ export interface MessageStore {
       consumerGroupSize?: string;
       condition?: string;
     }
-  ) => Promise<T>;
+  ) => Promise<EntityType>;
   disconnect(): Promise<void>;
 }

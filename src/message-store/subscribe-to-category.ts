@@ -3,7 +3,7 @@ import promisePoller from "promise-poller";
 import { getCategoryMessages } from "../message-db-client/get-category-messages";
 import { loadStreamSubscriberPosition, saveStreamSubscriberPosition } from "../message-db-client/stream-subscriber-position";
 import { NoopLogger } from "../noop-logger";
-import { MessageHandlerContext, MessageHandlerFunc } from "../types/message-handler.type";
+import { MessageHandlerContext, MessageHandlerFunc } from "../types";
 
 export async function subscribeToCategory(
   client: Client,

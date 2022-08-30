@@ -1,14 +1,10 @@
 import { NoopLogger } from "../noop-logger";
-import { EntityProjection } from "../types/entity-projection.type";
-import { MessageHandlerFunc } from "../types/message-handler.type";
-import { MessageStoreConfig } from "../types/message-store-config.type";
-import { MessageStore } from "../types/message-store.type";
-import { Message } from "../types/message.type";
 import { project } from "./project";
 import { subscribeToStream } from "./subscribe-to-stream";
 import { subscribeToCategory } from "./subscribe-to-category";
 import { projectCategory } from "./project-category";
 import { connectToMessageDB, getCategoryMessages, getLastStreamMessage, getStreamMessages, writeMessage } from "../message-db-client";
+import { EntityProjection, Message, MessageHandlerFunc, MessageStore, MessageStoreConfig } from "../types";
 
 export async function connect(config: MessageStoreConfig): Promise<MessageStore> {
   const { connectionString, logger = NoopLogger } = config;

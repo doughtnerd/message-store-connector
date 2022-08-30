@@ -1,8 +1,7 @@
 import { Client } from "pg";
 import { getStreamMessages } from "../message-db-client/get-stream-messages";
 import { getStreamVersion } from "../message-db-client/get-stream-version";
-import { EntityProjection } from "../types/entity-projection.type";
-import { Message } from "../types/message.type";
+import { EntityProjection, Message } from "../types";
 
 export type ProjectFunctionType<T> = (
   client: Client,

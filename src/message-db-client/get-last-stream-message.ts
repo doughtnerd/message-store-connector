@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import { Message } from "../types/message.type";
+import { Message } from "../types";
 
 export async function getLastStreamMessage(client: Client, streamName: string): Promise<Message[]> {
   const query = `SELECT id, stream_name AS "streamName", type, position::int, global_position::int AS "globalPosition", data::jsonb, metadata::jsonb, time FROM get_last_stream_message($1);`;

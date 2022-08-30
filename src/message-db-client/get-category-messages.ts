@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import { Message } from "../types/message.type";
+import { Message } from "../types";
 
 /**
  * Retrieve messages from a category of streams, optionally specifying the starting position, the number of messages to retrieve, the correlation category for Pub/Sub, consumer group parameters, and an additional condition that will be appended to the SQL command's WHERE clause.

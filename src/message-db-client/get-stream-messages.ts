@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import { Message } from "../types/message.type";
+import { Message } from "../types";
 
 export async function getStreamMessages(
   client: Client,

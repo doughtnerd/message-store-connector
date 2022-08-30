@@ -1,8 +1,3 @@
-import { connectToMessageDB } from "../message-db-client/connect-to-messagedb";
-import { getCategoryMessages } from "../message-db-client/get-category-messages";
-import { getLastStreamMessage } from "../message-db-client/get-last-stream-message";
-import { getStreamMessages } from "../message-db-client/get-stream-messages";
-import { writeMessage } from "../message-db-client/write-message";
 import { NoopLogger } from "../noop-logger";
 import { EntityProjection } from "../types/entity-projection.type";
 import { MessageHandlerFunc } from "../types/message-handler.type";
@@ -13,6 +8,7 @@ import { project } from "./project";
 import { subscribeToStream } from "./subscribe-to-stream";
 import { subscribeToCategory } from "./subscribe-to-category";
 import { projectCategory } from "./project-category";
+import { connectToMessageDB, getCategoryMessages, getLastStreamMessage, getStreamMessages, writeMessage } from "../message-db-client";
 
 export async function connect(config: MessageStoreConfig): Promise<MessageStore> {
   const { connectionString, logger = NoopLogger } = config;
@@ -72,18 +68,18 @@ export async function connect(config: MessageStoreConfig): Promise<MessageStore>
         consumerGroupSize?: string;
       }
     ) => subscribeToCategory.call(messageStore, client, subscriberId, streamName, handlers, { ...options, logger: logger }),
-    project: <T>(
+    project: <EntityType>(
       streamName: string,
-      entityProjection: EntityProjection<T>,
+      entityProjection: EntityProjection<EntityType, any, any>,
       options?: {
         startingPosition?: number;
         batchSize?: number;
         condition?: string;
       }
-    ) => project(client, streamName, entityProjection, options),
-    projectCategory: <T>(
+    ) => project<EntityType>(client, streamName, entityProjection, options),
+    projectCategory: <EntityType>(
       categoryName: string,
-      entityProjection: EntityProjection<T>,
+      entityProjection: EntityProjection<EntityType, any, any>,
       options?: {
         startingPosition?: number;
         batchSize?: number;

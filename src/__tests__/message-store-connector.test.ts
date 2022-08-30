@@ -5,6 +5,7 @@ import { Message } from "../types/message.type";
 import { NoopLogger } from "../noop-logger";
 import { connect } from "../message-store/connect";
 import { createStandardConfigString } from "../message-db-client/connect-to-messagedb";
+import { EntityProjection } from "../types";
 
 const wait = (forMillis: number) =>
   new Promise<void>((resolve, reject) => {
@@ -326,7 +327,13 @@ describe("Message Store Connector", () => {
       metadata: {},
     });
 
-    const testEntity = await messageStore.projectCategory(uniqueCategory, {
+    type TestEntityType = {
+      timestamps: []
+    }
+
+    type EventTypes = 'TestEvent'
+
+    const testProjection: EntityProjection<TestEntityType, {}, EventTypes> = {
       entity: { timestamps: [] },
       projectionName: "Test Projection",
       handlers: {
@@ -335,7 +342,9 @@ describe("Message Store Connector", () => {
           return entity;
         },
       },
-    });
+    }
+
+    const testEntity = await messageStore.projectCategory<TestEntityType>(uniqueCategory, testProjection);
 
     expect(testEntity.timestamps.length).toEqual(2);
   });
@@ -350,7 +359,13 @@ describe("Message Store Connector", () => {
       metadata: {},
     });
 
-    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+    type TestEntityType = {
+      timestamps: []
+    }
+
+    type EventTypes = 'TestEvent'
+
+    const testProjection: EntityProjection<TestEntityType, {}, EventTypes> = {
       entity: { timestamps: [] },
       projectionName: "Test Projection",
       handlers: {
@@ -359,7 +374,9 @@ describe("Message Store Connector", () => {
           return entity;
         },
       },
-    });
+    }
+
+    const testEntity = await messageStore.project<TestEntityType>(`testStream-${streamId}`, testProjection);
 
     expect(testEntity.timestamps.length).toEqual(1);
   });
@@ -374,15 +391,19 @@ describe("Message Store Connector", () => {
       metadata: {},
     });
 
-    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+    type TestEntityType = {
+      timestamps: []
+    }
+
+    type EventTypes = 'TestEvent'
+
+    const testProjection: EntityProjection<TestEntityType, {}, EventTypes> = {
       entity: { timestamps: [] },
       projectionName: "Test Projection",
-      handlers: {
-        NonMatchingHandler: (entity: any, message: any) => {
-          fail();
-        },
-      },
-    });
+      handlers: {},
+    }
+
+    const testEntity = await messageStore.project<TestEntityType>(`testStream-${streamId}`, testProjection);
 
     expect(testEntity.timestamps.length).toEqual(0);
   });
@@ -402,7 +423,13 @@ describe("Message Store Connector", () => {
       metadata: {},
     });
 
-    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+    type TestEntityType = {
+      timestamps: []
+    }
+
+    type EventTypes = 'TestEvent'
+
+    const testProjection: EntityProjection<TestEntityType, {}, EventTypes> = {
       entity: { timestamps: [] },
       projectionName: "Test Projection",
       handlers: {
@@ -411,7 +438,9 @@ describe("Message Store Connector", () => {
           return entity;
         },
       },
-    });
+    }
+
+    const testEntity = await messageStore.project<TestEntityType>(`testStream-${streamId}`, testProjection);
 
     expect(testEntity.timestamps.length).toEqual(2);
   });
@@ -419,7 +448,13 @@ describe("Message Store Connector", () => {
   test("Projection can be ran against a stream with no message in it", async () => {
     const streamId = uuid();
 
-    const testEntity = await messageStore.project(`testStream-${streamId}`, {
+    type TestEntityType = {
+      timestamps: []
+    }
+
+    type EventTypes = 'TestEvent'
+
+    const testProjection: EntityProjection<TestEntityType, {}, EventTypes> = {
       entity: { timestamps: [] },
       projectionName: "Test Projection",
       handlers: {
@@ -428,7 +463,9 @@ describe("Message Store Connector", () => {
           return entity;
         },
       },
-    });
+    }
+
+    const testEntity = await messageStore.project<TestEntityType>(`testStream-${streamId}`, testProjection);
 
     expect(testEntity.timestamps.length).toEqual(0);
   });
@@ -448,18 +485,26 @@ describe("Message Store Connector", () => {
       metadata: {},
     });
 
-    const testEntity = await messageStore.project(
-      `testStream-${streamId}`,
-      {
-        entity: { timestamps: [] },
-        projectionName: "Test Projection",
-        handlers: {
-          TestEvent: (entity: any, message: any) => {
-            entity.timestamps.push(message.time);
-            return entity;
-          },
+    type TestEntityType = {
+      timestamps: []
+    }
+
+    type EventTypes = 'TestEvent'
+
+    const testProjection: EntityProjection<TestEntityType, {}, EventTypes> = {
+      entity: { timestamps: [] },
+      projectionName: "Test Projection",
+      handlers: {
+        TestEvent: (entity: any, message: any) => {
+          entity.timestamps.push(message.time);
+          return entity;
         },
       },
+    }
+
+    const testEntity = await messageStore.project<TestEntityType>(
+      `testStream-${streamId}`,
+      testProjection,
       { batchSize: 1 }
     );
 

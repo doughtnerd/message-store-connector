@@ -1,11 +1,11 @@
 import { Message } from "./message.type";
 
-export type projectionHandlerFunc<T> = (entity: T, message: Message) => T;
+export type ProjectionHandlerFunc<EntityType extends {} | Function, MessageDataType, MessageType extends string> = (entity: EntityType, message: Message<MessageDataType, MessageType>) => EntityType
 
-export type EntityProjection<T extends {} | Function> = {
+export type EntityProjection<EntityType, MessageDataType, MessageTypes extends string> = {
   projectionName: string;
-  entity: T;
-  handlers: {
-    [key: string]: projectionHandlerFunc<T>;
-  };
+  entity: EntityType;
+  handlers: Partial<{
+    [Property in MessageTypes]: ProjectionHandlerFunc<EntityType, MessageDataType, Property>
+  }>;
 };

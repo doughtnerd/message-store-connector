@@ -7,7 +7,7 @@ import { Message } from "../types/message.type";
 export type ProjectFunctionType<T> = (
   client: Client,
   streamName: string,
-  entityProjection: EntityProjection<T>,
+  entityProjection: EntityProjection<T, unknown, any>,
   options?: {
     startingPosition?: number;
     batchSize?: number;
@@ -18,7 +18,7 @@ export type ProjectFunctionType<T> = (
 export async function project<T>(
   client: Client,
   streamName: string,
-  entityProjection: EntityProjection<T>,
+  entityProjection: EntityProjection<T, unknown, any>,
   options?: {
     startingPosition?: number;
     batchSize?: number;
@@ -51,7 +51,7 @@ export async function project<T>(
   return entity;
 }
 
-function initializeEntity<T>(entityProjection: EntityProjection<T>): T {
+function initializeEntity<T>(entityProjection: EntityProjection<T, unknown, any>): T {
   let entity = entityProjection.entity;
   if (typeof entity === "function") {
     entity = entity();
@@ -59,9 +59,11 @@ function initializeEntity<T>(entityProjection: EntityProjection<T>): T {
   return entity;
 }
 
-function doProjection<T>(entity: T, message: Message, entityProjection: EntityProjection<T>): T {
+function doProjection<T>(entity: T, message: Message, entityProjection: EntityProjection<T, unknown, any>): T {
   if (Object.prototype.hasOwnProperty.call(entityProjection.handlers, message.type)) {
-    const handlerReturn = entityProjection.handlers[message.type](entity, message);
+    const handlers = entityProjection.handlers
+    const handler = handlers[message.type]
+    const handlerReturn = handler?.(entity, message);
     entity = handlerReturn ? handlerReturn : entity;
   }
 

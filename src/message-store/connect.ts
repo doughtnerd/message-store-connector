@@ -5,13 +5,14 @@ import { subscribeToCategory } from "./subscribe-to-category";
 import { projectCategory } from "./project-category";
 import { connectToMessageDB, getCategoryMessages, getLastStreamMessage, getStreamMessages, writeMessage } from "../message-db-client";
 import { EntityProjection, Message, MessageHandlerFunc, MessageStore, MessageStoreConfig } from "../types";
+import {Serializeable} from "../types/serializeable.type";
 
 export async function connect(config: MessageStoreConfig): Promise<MessageStore> {
   const { connectionString, logger = NoopLogger } = config;
   const client = await connectToMessageDB({ connectionString, logger })
 
   const messageStore: MessageStore = {
-    writeMessage: <T>(streamName: string, message: Pick<Message<T>, "id" | "type" | "data" | "metadata">, expectedVersion?: number) =>
+    writeMessage: <T extends Serializeable = {}>(streamName: string, message: Pick<Message<T>, "id" | "type" | "data" | "metadata">, expectedVersion?: number) =>
       writeMessage.call(null, client, streamName, message, expectedVersion),
     getStreamMessages: (
       streamName: string,

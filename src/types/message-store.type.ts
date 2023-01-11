@@ -1,9 +1,10 @@
 import { EntityProjection } from "./entity-projection.type";
 import { MessageHandlerFunc } from "./message-handler.type";
 import { Message } from "./message.type";
+import {Serializeable} from "./serializeable.type";
 
 export interface MessageStore {
-  writeMessage<T>(
+  writeMessage<T extends Serializeable>(
     streamName: string,
     message: Pick<Message<T>, "id" | "type" | "data" | "metadata">,
     expectedVersion?: number

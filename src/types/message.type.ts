@@ -1,4 +1,6 @@
-export type Message<T extends Object = {}, K extends string = string> = {
+import {Serializeable} from "./serializeable.type";
+
+export type Message<T extends Serializeable = {}, K extends string = string> = {
   id: string;
   type: K;
   position: number;

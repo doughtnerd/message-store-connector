@@ -1,7 +1,8 @@
 import { Client } from "pg";
 import { Message } from "../types";
+import {Serializeable} from "../types/serializeable.type";
 
-export async function writeMessage<T = {}, K extends string = string>(
+export async function writeMessage<T extends Serializeable = {}, K extends string = string>(
   client: Client,
   streamName: string,
   message: Pick<Message<T, K>, "id" | "type" | "data" | "metadata">,

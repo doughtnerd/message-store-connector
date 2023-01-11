@@ -2,11 +2,12 @@ import { Client } from "pg";
 import { getStreamMessages } from "../message-db-client/get-stream-messages";
 import { getStreamVersion } from "../message-db-client/get-stream-version";
 import { EntityProjection, Message } from "../types";
+import {Serializeable} from "../types/serializeable.type";
 
 export type ProjectFunctionType<T> = (
   client: Client,
   streamName: string,
-  entityProjection: EntityProjection<T, unknown, any>,
+  entityProjection: EntityProjection<T, Serializeable, any>,
   options?: {
     startingPosition?: number;
     batchSize?: number;
@@ -17,7 +18,7 @@ export type ProjectFunctionType<T> = (
 export async function project<T>(
   client: Client,
   streamName: string,
-  entityProjection: EntityProjection<T, unknown, any>,
+  entityProjection: EntityProjection<T, Serializeable, any>,
   options?: {
     startingPosition?: number;
     batchSize?: number;
@@ -50,7 +51,7 @@ export async function project<T>(
   return entity;
 }
 
-function initializeEntity<T>(entityProjection: EntityProjection<T, unknown, any>): T {
+function initializeEntity<T>(entityProjection: EntityProjection<T, Serializeable, any>): T {
   let entity = entityProjection.entity;
   if (typeof entity === "function") {
     entity = entity();
@@ -58,7 +59,7 @@ function initializeEntity<T>(entityProjection: EntityProjection<T, unknown, any>
   return entity;
 }
 
-function doProjection<T>(entity: T, message: Message, entityProjection: EntityProjection<T, unknown, any>): T {
+function doProjection<T>(entity: T, message: Message, entityProjection: EntityProjection<T, Serializeable, any>): T {
   if (Object.prototype.hasOwnProperty.call(entityProjection.handlers, message.type)) {
     const handlers = entityProjection.handlers
     const handler = handlers[message.type]

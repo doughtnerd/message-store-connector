@@ -6,4 +6,4 @@ export type MessageHandlerContext = {
   messageStore: MessageStore;
 };
 
-export type MessageHandlerFunc = (message: Message, context: MessageHandlerContext) => Promise<boolean>;
+export type MessageHandlerFunc<T extends Message = Message<any, string>> = (message: T, context: MessageHandlerContext) => Promise<boolean>;

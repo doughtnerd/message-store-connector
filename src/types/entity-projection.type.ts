@@ -1,12 +1,17 @@
 import { Message } from "./message.type";
-import {Serializeable} from "./serializeable.type";
+import { Serializeable } from "./serializeable.type";
 
-export type ProjectionHandlerFunc<EntityType extends {} | Function, MessageDataType extends Serializeable, MessageType extends string = any> = (entity: EntityType, message: Message<MessageDataType, MessageType>) => EntityType
+export type ProjectionHandlerFunc<
+  EntityType,
+  MessageType extends Message
+> = (entity: EntityType, message: MessageType) => EntityType
 
-export type EntityProjection<EntityType, MessageDataType extends Serializeable, MessageTypes extends string = any> = {
+export type EntityInitFn<T> = () => T;
+
+export type Projection<EntityType, MessageTypes extends Message> = {
   projectionName: string;
-  entity: EntityType;
+  entity: EntityType | EntityInitFn<EntityType>
   handlers: Partial<{
-    [Property in MessageTypes]: ProjectionHandlerFunc<EntityType, MessageDataType, Property>
+    [Property in MessageTypes['type']]: ProjectionHandlerFunc<EntityType, Extract<MessageTypes, Message<Serializeable, Property>>>
   }>;
 };

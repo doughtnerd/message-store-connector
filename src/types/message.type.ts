@@ -15,3 +15,5 @@ export type Message<T extends Serializeable = {}, K extends string = string> = {
   };
   time: Date;
 };
+
+export type MinimalWritableMessage<T extends Message> = Pick<T, 'id' | 'type' | 'data' | 'metadata'>

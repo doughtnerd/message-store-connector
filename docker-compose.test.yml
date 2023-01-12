@@ -1,6 +1,6 @@
 version: "3.7"
 
-services: 
+services:
   unit:
     image: doughtnerd/message-store-connector:dev
     build:
@@ -10,9 +10,9 @@ services:
       - message_store
     command: "./bin/wait-for-it.sh message_store:5432 --timeout=60 -- npm run test"
     env_file: .env
-    depends_on: 
+    depends_on:
       - message_store
-    volumes: 
+    volumes:
       - ./coverage:/coverage
 
   coverage:
@@ -24,19 +24,18 @@ services:
       - message_store
     command: "./bin/wait-for-it.sh message_store:5432 --timeout=60 -- npm run test-coverage"
     env_file: .env
-    depends_on: 
+    depends_on:
       - message_store
-    volumes: 
+    volumes:
       - ./coverage:/usr/src/coverage/
-    
+
   message_store:
     container_name: message_store
     image: articulate/message-db:1.2.2
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-      POSTGRES_PASSWORD: ${MESSAGE_STORE_PASSWORD}
     env_file: .env
-    ports: 
+    ports:
       - 5432:5432
     expose:
       - 5432

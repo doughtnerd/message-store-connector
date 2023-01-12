@@ -1,5 +1,5 @@
-import {Serializeable} from "./serializeable.type";
-import {TypePredicate} from "./type-predicate.type";
+import { Serializeable, SerializeableRecord } from "./serializeable.type";
+import { TypePredicate } from "./type-predicate.type";
 
 type DataFieldContract<T extends Serializeable = Serializeable> = {
   type: T;
@@ -7,54 +7,39 @@ type DataFieldContract<T extends Serializeable = Serializeable> = {
   example: T;
 };
 
-type EventContract = {
-  data: Record<string, DataFieldContract>;
-  description: string;
-};
-
-type CommandContract = {
-  data: Record<string, DataFieldContract>;
-  description: string;
-  events: Record<string, EventContract>;
-};
-
-type CreateCommandContract<T extends Record<string, any>> = {
+type MessageContract<T extends SerializeableRecord = SerializeableRecord> = {
   data: {
-    [Property in keyof T]: {
-      type: T[Property];
-      description: string;
-      example: T[Property];
-    }
+    [Property in keyof T]: DataFieldContract<T[Property]>;
   };
   description: string;
-  events: Record<string, EventContract>;
 };
 
-type MessageContract = CommandContract | EventContract;
+type MessageContracts = Record<string, MessageContract>;
 
-type ContractCommands = Record<string, CommandContract>;
-
-export type Contract<RootType> = {
-  componentName: string;
-  aggregateRoot: RootType;
-  streamCategoryName: string;
-  commands: ContractCommands;
-};
-
-export type CreateContract<Component extends string, Category extends string, AggregateRootType, CommandTypes extends ContractCommands> = {
+export type Contract<
+  Component extends string = string,
+  Category extends string = string,
+  AggregateRootType = unknown,
+  CommandTypes extends MessageContracts = MessageContracts,
+  EventTypes extends MessageContracts = MessageContracts> = {
   componentName: Component;
   aggregateRoot: AggregateRootType;
   streamCategoryName: Category;
   commands: CommandTypes;
+  events: EventTypes
 }
 
-export type ContractCommandValidator<T extends Contract<any>> = {
+export type ContractCommandValidator<T extends Contract> = {
   [Property in keyof T['commands']]: TypePredicate<MessageContractDataType<T['commands'][Property]>>;
 }
 
 export type MessageContractDataType<T extends MessageContract> = {
   [Property in keyof T['data']]: T['data'][Property]['type']
 }
+
+export type ContractEventData<T extends Contract, Name extends keyof T['events'] = never> = Name extends never ? {
+  [Property in keyof T['events']]:  MessageContractDataType<T['events'][Property]>
+} : MessageContractDataType<T['events'][Name]>
 
 class Account {
   private balance = 0;
@@ -68,17 +53,31 @@ type DepositCommandData = {
   amount: number;
 }
 
-type WithdrawContract = CreateCommandContract<WithdrawCommandData>;
+type DepositedEventData = {
+  amount: number;
+}
 
-type DepositContract = CreateCommandContract<DepositCommandData>;
+type WithdrawnEventData = {
+  amount: number;
+}
 
-type AccountComponentContract = CreateContract<
+type WithdrawContract = MessageContract<WithdrawCommandData>;
+type DepositContract = MessageContract<DepositCommandData>;
+
+type DepositedContract = MessageContract<DepositedEventData>;
+type WithdrawnContract = MessageContract<WithdrawnEventData>;
+
+type AccountComponentContract = Contract<
   "Account Component",
   "account",
   Account,
   {
     Deposit: DepositContract,
     Withdraw: WithdrawContract
+  },
+  {
+    Deposited: DepositedContract
+    Withdrawn: WithdrawnContract
   }
 >;
 

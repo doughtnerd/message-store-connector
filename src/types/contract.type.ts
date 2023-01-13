@@ -1,3 +1,4 @@
+import {Message} from "./message.type";
 import { Serializeable, SerializeableRecord } from "./serializeable.type";
 import { TypePredicate } from "./type-predicate.type";
 
@@ -41,47 +42,13 @@ export type ContractEventData<T extends Contract, Name extends keyof T['events']
   [Property in keyof T['events']]:  MessageContractDataType<T['events'][Property]>
 } : MessageContractDataType<T['events'][Name]>
 
-class Account {
-  private balance = 0;
-}
+export type MessageContractAsMessage<T extends MessageContract, Type extends string = string> = Message<MessageContractDataType<T>, Type>;
 
-type WithdrawCommandData = {
-  amount: number;
-}
+export type ContractMessages<T extends Contract> = {
+  [Property in keyof (T['commands'] & T['events']) as Extract<Property, string>]:
+    T['commands'][Property] extends undefined ?
+      MessageContractAsMessage<T['events'][Property], Extract<Property, string>> :
+      MessageContractAsMessage<T['commands'][Property], Extract<Property, string>>
+};
 
-type DepositCommandData = {
-  amount: number;
-}
-
-type DepositedEventData = {
-  amount: number;
-}
-
-type WithdrawnEventData = {
-  amount: number;
-}
-
-type WithdrawContract = MessageContract<WithdrawCommandData>;
-type DepositContract = MessageContract<DepositCommandData>;
-
-type DepositedContract = MessageContract<DepositedEventData>;
-type WithdrawnContract = MessageContract<WithdrawnEventData>;
-
-type AccountComponentContract = Contract<
-  "Account Component",
-  "account",
-  Account,
-  {
-    Deposit: DepositContract,
-    Withdraw: WithdrawContract
-  },
-  {
-    Deposited: DepositedContract
-    Withdrawn: WithdrawnContract
-  }
->;
-
-const MyContractValidators: ContractCommandValidator<AccountComponentContract> = {
-  Deposit: (data): data is MessageContractDataType<DepositContract> => true,
-  Withdraw: (data): data is MessageContractDataType<WithdrawContract> => true,
-}
+export type ContractMessage<T extends Contract, Name extends keyof (T['events'] & T['commands'])> = ContractMessages<T>[Extract<Name, string>]

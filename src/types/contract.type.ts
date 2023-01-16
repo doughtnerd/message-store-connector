@@ -12,7 +12,7 @@ type DataFieldContract<T extends Serializeable = Serializeable> = {
   example: T;
 };
 
-type MessageContract<T extends SerializeableRecord = SerializeableRecord> = {
+export type MessageContract<T extends SerializeableRecord = SerializeableRecord> = {
   data: {
     [Property in keyof T]: DataFieldContract<T[Property]>;
   };

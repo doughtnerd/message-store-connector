@@ -48,6 +48,14 @@ export type ContractEventData<T extends Contract, Name extends keyof T['events']
 
 export type MessageContractAsMessage<T extends MessageContract, Type extends string = string> = Message<MessageContractDataType<T>, Type>;
 
+export type MessageNames<T extends Contract> = Extract<keyof T['events'] | keyof T['commands'], string>;
+
+export type ExtractMessage<T extends Contract, Name extends MessageNames<T>> =
+  T['commands'][Name] extends undefined ?
+  T['events'][Name] extends undefined ? unknown : MessageContractAsMessage<T['events'][Name], Name> :
+  MessageContractAsMessage<T['commands'][Name], Name>;
+
+
 export type ContractMessages<T extends Contract = Contract> = {
   [Property in keyof (T['commands'] & T['events']) as Extract<Property, string>]:
     T['commands'][Property] extends undefined ?
@@ -161,3 +169,5 @@ type AccountContract = Contract<
 >
 
 type Test = WithContract<AccountContract,Projection>;
+
+type Test2 = ExtractMessage<AccountContract, 'Withdrawn'>;

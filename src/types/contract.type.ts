@@ -1,4 +1,8 @@
-import {Message} from "./message.type";
+import {GetCategoryMessagesOptions, GetStreamMessagesOptions, MessageBatchConfig} from "../message-db-client";
+import {Projection} from "./entity-projection.type";
+import {MessageHandlerFunc} from "./message-handler.type";
+import {IMessageStore, MessageHandlers, ProjectCategoryOptions, ProjectOptions, SubscribeToCategoryOptions, SubscribeToStreamOptions} from "./message-store.interface";
+import {Message, MinimalWritableMessage} from "./message.type";
 import { Serializeable, SerializeableRecord } from "./serializeable.type";
 import { TypePredicate } from "./type-predicate.type";
 
@@ -44,7 +48,7 @@ export type ContractEventData<T extends Contract, Name extends keyof T['events']
 
 export type MessageContractAsMessage<T extends MessageContract, Type extends string = string> = Message<MessageContractDataType<T>, Type>;
 
-export type ContractMessages<T extends Contract> = {
+export type ContractMessages<T extends Contract = Contract> = {
   [Property in keyof (T['commands'] & T['events']) as Extract<Property, string>]:
     T['commands'][Property] extends undefined ?
       MessageContractAsMessage<T['events'][Property], Extract<Property, string>> :
@@ -52,3 +56,108 @@ export type ContractMessages<T extends Contract> = {
 };
 
 export type ContractMessage<T extends Contract, Name extends keyof (T['events'] & T['commands'])> = ContractMessages<T>[Extract<Name, string>]
+
+export type ContractMessageUnion<T extends Contract> = {[P in keyof ContractMessages<T>]: ContractMessages<T>[P]}[keyof ContractMessages<T>];
+
+type ProjectionWithContract<C extends Contract> = Projection<C['aggregateRoot'], ContractMessageUnion<C>>
+
+type MessageHandlerWithContract<C extends Contract> = MessageHandlerFunc<ContractMessageUnion<C>>;
+
+type MessageHandlersWithContract<C extends Contract> =
+  Record<keyof C['commands'], MessageHandlerWithContract<C>> |
+  Record<keyof C['events'], MessageHandlerWithContract<C>>;
+
+type MessageBatchConfigWithContract<C extends Contract> = {
+  streamName: StreamName<C['streamCategoryName']>;
+  message: ContractMessageUnion<C>;
+  expectedVersion?: number;
+};
+
+export type StreamName<Category extends string = string> = `${Category}${string}`;
+
+interface IMessageStoreWithContract<C extends Contract> {
+  project(
+    streamName: StreamName<C['streamCategoryName']> | string,
+    entityProjection: WithContract<C, Projection>,
+    options?: ProjectOptions
+  ): Promise<C['aggregateRoot']>;
+
+  projectCategory(
+    categoryName: StreamName<C['streamCategoryName']> | string,
+    entityProjection: WithContract<C, Projection>,
+    options?: ProjectCategoryOptions
+  ): Promise<C['aggregateRoot']>;
+
+  subscribeToCategory(
+    subscriberId: string,
+    streamName: StreamName<C['streamCategoryName']> | string,
+    handlers: WithContract<C, MessageHandlers>,
+    options?: SubscribeToCategoryOptions
+  ): Promise<{ unsubscribe: () => void }>;
+
+  subscribeToStream(
+    subscriberId: string,
+    streamName: StreamName<C['streamCategoryName']> | string,
+    handlers: WithContract<C, MessageHandlers>,
+    options?: SubscribeToStreamOptions
+  ): Promise<{ unsubscribe: () => void }>;
+
+  getCategoryMessages(
+    categoryName: StreamName<C['streamCategoryName']> | string,
+    options?: GetCategoryMessagesOptions
+  ): Promise<ContractMessageUnion<C>[]>;
+
+  getLastStreamMessage(streamName: string): Promise<ContractMessageUnion<C>[]>;
+
+  getStreamMessages(
+    streamName: StreamName<C['streamCategoryName']> | string,
+    options?: GetStreamMessagesOptions
+  ): Promise<ContractMessageUnion<C>[]>;
+
+  getStreamVersion(streamName: string): Promise<{ streamVersion: number | null }>;
+
+  writeMessage(
+    streamName: StreamName<C['streamCategoryName']> | string,
+    message: MinimalWritableMessage<ContractMessageUnion<C>> | ContractMessageUnion<C>,
+    expectedVersion?: number
+  ): Promise<{ streamPosition: string }>;
+
+  writeBatch(messageBatch: Array<WithContract<C, MessageBatchConfig>>): Promise<Array<{ streamPosition: string }>>;
+}
+
+export type WithContract<
+  T extends Contract,
+  K extends IMessageStore |
+    Projection |
+    MessageHandlerFunc |
+    MessageHandlers |
+    MessageBatchConfig |
+    IMessageStore = never
+  > =
+    K extends Projection ? ProjectionWithContract<T> :
+    K extends MessageHandlerFunc ? MessageHandlerWithContract<T> :
+    K extends MessageHandlers ? MessageHandlersWithContract<T> :
+    K extends MessageBatchConfig ? MessageBatchConfigWithContract<T> :
+    K extends IMessageStore ? IMessageStoreWithContract<T> :
+    unknown;
+
+
+type AccountAggregate = { balance: number };
+
+type WithdrawContract = MessageContract<{ amount: number }>;
+
+type WithdrawnContract = MessageContract<{ amount: number }>;
+
+type AccountContract = Contract<
+  'Account',
+  'account',
+  AccountAggregate,
+  {
+    Withdraw: WithdrawContract
+  },
+  {
+    Withdrawn: WithdrawnContract
+  }
+>
+
+type Test = WithContract<AccountContract,Projection>;

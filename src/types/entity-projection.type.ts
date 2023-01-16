@@ -8,7 +8,7 @@ export type ProjectionHandlerFunc<
 
 export type EntityInitFn<T> = () => T;
 
-export type Projection<EntityType, MessageTypes extends Message> = {
+export type Projection<EntityType = any, MessageTypes extends Message = Message> = {
   projectionName: string;
   entity: EntityType | EntityInitFn<EntityType>
   handlers: Partial<{

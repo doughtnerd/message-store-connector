@@ -56,6 +56,12 @@ export type ExtractMessage<T extends Contract, Name extends MessageNames<T>> =
   T['events'][Name] extends undefined ? unknown : MessageContractAsMessage<T['events'][Name], Name> :
   MessageContractAsMessage<T['commands'][Name], Name>;
 
+export type ContractEvents<T extends Contract = Contract> = {
+  [Property in keyof T['events'] as Extract<Property, string>]:
+    T['events'][Property] extends undefined ?
+      Message :
+      MessageContractAsMessage<T['events'][Property], Extract<Property, string>>;
+}
 
 export type ContractMessages<T extends Contract = Contract> = {
   [Property in keyof (T['commands'] & T['events']) as Extract<Property, string>]:
@@ -66,9 +72,16 @@ export type ContractMessages<T extends Contract = Contract> = {
 
 export type ContractMessage<T extends Contract, Name extends keyof (T['events'] & T['commands'])> = ContractMessages<T>[Extract<Name, string>]
 
-export type ContractMessageUnion<T extends Contract> = {[P in keyof ContractMessages<T>]: ContractMessages<T>[P]}[keyof ContractMessages<T>];
+export type ContractMessageUnion<T extends Contract> = {
+  [P in keyof ContractMessages<T>]: ContractMessages<T>[P]
+}[keyof ContractMessages<T>];
 
-type ProjectionWithContract<C extends Contract> = Projection<C['aggregateRoot'], ContractMessageUnion<C>>
+export type ContractEventsUnion<T extends Contract> = {
+  [P in keyof ContractEvents<T>]: ContractEvents<T>[P]
+}[keyof ContractEvents<T>];
+
+type ProjectionWithContract<C extends Contract> =
+  Projection<C['aggregateRoot'], ContractEventsUnion<C>>
 
 type MessageHandlerFuncWithContract<C extends Contract> =
   (
@@ -176,3 +189,14 @@ type AccountContract = Contract<
 type Test = WithContract<AccountContract,Projection>;
 
 type Test2 = ExtractMessage<AccountContract, 'Withdrawn'>;
+
+const projection: WithContract<AccountContract, Projection> = {
+  projectionName: 'Projection',
+  entity: { balance: 0 },
+  handlers: {
+    Withdrawn: (entity, event) => {
+      entity.balance -= event.data.amount;
+      return entity;
+    },
+  }
+};

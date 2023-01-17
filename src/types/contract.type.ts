@@ -210,12 +210,3 @@ const projection: WithContract<AccountContract, Projection> = {
   }
 };
 
-
-const m: WithContract<AccountContract, IMessageStore>;
-m.writeMessage('', {
-  id: '',
-  type: 'Withdrawn',
-  data: {
-    dAmount: 10
-  },
-  metadata: {}

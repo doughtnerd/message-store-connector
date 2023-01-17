@@ -148,7 +148,7 @@ export type WithContract<
     IMessageStore = never
   > =
     K extends Projection ? ProjectionWithContract<T> :
-    K extends MessageHandlerFunc ? MessageHandlerWithContract<T> :
+    K extends MessageHandlerFunc ? MessageHandlerFuncWithContract<T> :
     K extends MessageHandlers ? MessageHandlersWithContract<T> :
     K extends MessageBatchConfig ? MessageBatchConfigWithContract<T> :
     K extends IMessageStore ? IMessageStoreWithContract<T> :

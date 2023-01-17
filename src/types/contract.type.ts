@@ -1,5 +1,6 @@
 import {GetCategoryMessagesOptions, GetStreamMessagesOptions, MessageBatchConfig} from "../message-db-client";
 import {Projection} from "./entity-projection.type";
+import {Logger} from "./logger.type";
 import {MessageHandlerFunc} from "./message-handler.type";
 import {IMessageStore, MessageHandlers, ProjectCategoryOptions, ProjectOptions, SubscribeToCategoryOptions, SubscribeToStreamOptions} from "./message-store.interface";
 import {Message, MinimalWritableMessage} from "./message.type";
@@ -69,11 +70,15 @@ export type ContractMessageUnion<T extends Contract> = {[P in keyof ContractMess
 
 type ProjectionWithContract<C extends Contract> = Projection<C['aggregateRoot'], ContractMessageUnion<C>>
 
-type MessageHandlerWithContract<C extends Contract> = MessageHandlerFunc<ContractMessageUnion<C>>;
+type MessageHandlerFuncWithContract<C extends Contract> =
+  (
+    message: ContractMessageUnion<C>,
+    context: { messageStore: WithContract<C, IMessageStore>, logger: Logger }
+  ) => Promise<boolean>;
 
 type MessageHandlersWithContract<C extends Contract> =
-  Record<keyof C['commands'], MessageHandlerWithContract<C>> |
-  Record<keyof C['events'], MessageHandlerWithContract<C>>;
+  Record<keyof C['commands'], MessageHandlerFuncWithContract<C>> |
+  Record<keyof C['events'], MessageHandlerFuncWithContract<C>>;
 
 type MessageBatchConfigWithContract<C extends Contract> = {
   streamName: StreamName<C['streamCategoryName']>;

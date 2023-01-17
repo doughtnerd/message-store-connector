@@ -33,52 +33,62 @@ export type Contract<
   streamCategoryName: Category;
   commands: CommandTypes;
   events: EventTypes
-}
+};
 
 export type ContractCommandValidator<T extends Contract> = {
-  [Property in keyof T['commands']]: TypePredicate<MessageContractDataType<T['commands'][Property]>>;
+  [Property in CommandNames<T>]: TypePredicate<MessageContractDataType<T['commands'][Property]>>;
 }
 
 export type MessageContractDataType<T extends MessageContract> = {
   [Property in keyof T['data']]: T['data'][Property]['type']
 }
 
-export type ContractEventData<T extends Contract, Name extends keyof T['events'] = never> = Name extends never ? {
-  [Property in keyof T['events']]:  MessageContractDataType<T['events'][Property]>
-} : MessageContractDataType<T['events'][Name]>
+export type ContractEventData<T extends Contract, Name extends EventNames<T> = never> = Name extends never ? {
+  [Property in EventNames<T>]:  MessageContractDataType<T['events'][Property]>
+} : MessageContractDataType<T['events'][Name]>;
 
-export type MessageContractAsMessage<T extends MessageContract, Type extends string = string> = Message<MessageContractDataType<T>, Type>;
+export type ContractCommandData<T extends Contract, Name extends CommandNames<T> = never> = Name extends never ? {
+  [Property in EventNames<T>]: MessageContractDataType<T['commands'][Property]>
+} : MessageContractDataType<T['commands'][Name]>;
 
-export type MessageNames<T extends Contract> = Extract<keyof T['events'] | keyof T['commands'], string>;
+export type EventNames<T extends Contract> = Extract<keyof T['events'], string>;
+export type CommandNames<T extends Contract> = Extract<keyof T['commands'], string>;
+export type MessageNames<T extends Contract> = EventNames<T> | CommandNames<T>;
+
+export type ExtractEvent<T extends Contract, Name extends EventNames<T>> =
+  Message<MessageContractDataType<T['events'][Name]>, Name>;
+
+export type ExtractCommand<T extends Contract, Name extends CommandNames<T>> =
+  Message<MessageContractDataType<T['commands'][Name]>, Name>;
 
 export type ExtractMessage<T extends Contract, Name extends MessageNames<T>> =
-  T['commands'][Name] extends undefined ?
-  T['events'][Name] extends undefined ? unknown : MessageContractAsMessage<T['events'][Name], Name> :
-  MessageContractAsMessage<T['commands'][Name], Name>;
+  Name extends EventNames<T> ? ExtractEvent<T, Name> :
+  ExtractCommand<T, Name>;
 
 export type ContractEvents<T extends Contract = Contract> = {
-  [Property in keyof T['events'] as Extract<Property, string>]:
-    T['events'][Property] extends undefined ?
-      Message :
-      MessageContractAsMessage<T['events'][Property], Extract<Property, string>>;
-}
-
-export type ContractMessages<T extends Contract = Contract> = {
-  [Property in keyof (T['commands'] & T['events']) as Extract<Property, string>]:
-    T['commands'][Property] extends undefined ?
-      MessageContractAsMessage<T['events'][Property], Extract<Property, string>> :
-      MessageContractAsMessage<T['commands'][Property], Extract<Property, string>>
+  [Property in EventNames<T>]: Message<MessageContractDataType<T['events'][Property]>, Property>
 };
 
-export type ContractMessage<T extends Contract, Name extends keyof (T['events'] & T['commands'])> = ContractMessages<T>[Extract<Name, string>]
+export type ContractCommands<T extends Contract = Contract> = {
+  [Property in CommandNames<T>]: Message<MessageContractDataType<T['commands'][Property]>, Property>
+};
+
+export type ContractMessages<T extends Contract = Contract> = {
+  [Property in MessageNames<T>]:
+     ExtractMessage<T, Extract<Property, string>>
+};
+
+export type ContractMessage<T extends Contract, Name extends MessageNames<T>> = ContractMessages<T>[Name]
 
 export type ContractMessageUnion<T extends Contract> = {
-  [P in keyof ContractMessages<T>]: ContractMessages<T>[P]
-}[keyof ContractMessages<T>];
+  [P in MessageNames<T>]: ContractMessages<T>[P]
+}[MessageNames<T>];
+
+type data =  ContractMessageUnion<AccountContract>;
 
 export type ContractEventsUnion<T extends Contract> = {
   [P in keyof ContractEvents<T>]: ContractEvents<T>[P]
-}[keyof ContractEvents<T>];
+}[EventNames<T>];
 
 type ProjectionWithContract<C extends Contract> =
   Projection<C['aggregateRoot'], ContractEventsUnion<C>>
@@ -182,13 +192,12 @@ type AccountContract = Contract<
     Withdraw: WithdrawContract
   },
   {
-    Withdrawn: WithdrawnContract
+    Withdrawn: WithdrawnContract,
+    Deposited: MessageContract<{ dAmount: number }>
   }
->
+>;
 
-type Test = WithContract<AccountContract,Projection>;
-
-type Test2 = ExtractMessage<AccountContract, 'Withdrawn'>;
+type MyMessages = ContractMessages<AccountContract>;
 
 const projection: WithContract<AccountContract, Projection> = {
   projectionName: 'Projection',
@@ -200,3 +209,13 @@ const projection: WithContract<AccountContract, Projection> = {
     },
   }
 };
+
+
+const m: WithContract<AccountContract, IMessageStore>;
+m.writeMessage('', {
+  id: '',
+  type: 'Withdrawn',
+  data: {
+    dAmount: 10
+  },
+  metadata: {}

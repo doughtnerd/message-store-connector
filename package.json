@@ -18,7 +18,7 @@
     "test:docker": "docker-compose -f docker-compose.test.yml up --build --exit-code-from unit unit",
     "test-coverage:docker": "docker-compose -f docker-compose.test.yml up --build --exit-code-from coverage coverage"
   },
-  "version": "1.2.1",
+  "version": "1.2.2",
   "main": "dist/index.js",
   "author": "Chris Carlson",
   "license": "MIT",

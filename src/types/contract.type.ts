@@ -97,7 +97,7 @@ type MessageHandlerFuncWithContract<C extends Contract> =
   (
     message: ContractMessageUnion<C>,
     context: { messageStore: WithContract<C, IMessageStore>, logger: Logger }
-  ) => Promise<boolean>;
+  ) => ReturnType<MessageHandlerFunc>;
 
 type MessageHandlersWithContract<C extends Contract> =
   Record<keyof C['commands'], MessageHandlerFuncWithContract<C>> |

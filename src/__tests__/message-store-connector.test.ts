@@ -86,7 +86,7 @@ describe("Message Store Connector", () => {
             TestEvent: (message: Message, context: any) => {
               expect(message.id).toEqual(messageId);
               done();
-              return Promise.resolve(true);
+              return Promise.resolve();
             },
           },
           { pollingInterval: 500 }
@@ -114,7 +114,7 @@ describe("Message Store Connector", () => {
         TestEvent: (message: Message, context: any) => {
           expect(message.id).toEqual(messageId);
           fakeFunc()
-          return Promise.resolve(true);
+          return Promise.resolve();
         },
       },
       { pollingInterval: 500 }
@@ -153,7 +153,7 @@ describe("Message Store Connector", () => {
       {
         TestEvent: (message: Message, context: any) => {
           fakeFunc();
-          return Promise.resolve(true);
+          return Promise.resolve();
         },
       },
       { pollingInterval: 500 }
@@ -165,7 +165,7 @@ describe("Message Store Connector", () => {
       {
         TestEvent: (message: Message, context: any) => {
           fakeFunc();
-          return Promise.resolve(true);
+          return Promise.resolve();
         },
       },
       { pollingInterval: 500 }
@@ -193,7 +193,7 @@ describe("Message Store Connector", () => {
       {
         TestEvent: (message: Message, context: any) => {
           mockFunc();
-          return Promise.resolve(true);
+          return Promise.resolve();
         },
       },
       { pollingInterval: 100 }
@@ -233,7 +233,7 @@ describe("Message Store Connector", () => {
       {
         TestEvent: (message: Message, context: any) => {
           mockFunc();
-          return Promise.resolve(true);
+          return Promise.resolve();
         },
       },
       { pollingInterval: 100 }
@@ -274,7 +274,7 @@ describe("Message Store Connector", () => {
       {
         TestEvent: (message: Message, context: any) => {
           mockFunc();
-          return Promise.resolve(true);
+          return Promise.resolve();
         },
       },
       { pollingInterval: 100 }
@@ -297,7 +297,7 @@ describe("Message Store Connector", () => {
       {
         TestEvent: (message: Message, context: any) => {
           mockFunc2();
-          return Promise.resolve(true);
+          return Promise.resolve();
         },
       },
       { pollingInterval: 100 }
@@ -537,27 +537,26 @@ describe("Message Store Connector", () => {
     const uniqueCategory = `uniqueCategory${uuid().replace(/-/g, "")}`;
     const streamName = `${uniqueCategory}-${uuid()}`;
     const results = await messageStore.writeBatch([
-      { 
-        streamName, 
+      {
+        streamName,
         message: {
           id: uuid(),
           type: "TestEvent",
           data: {},
           metadata: {},
-        } 
+        }
       },
-      { 
-        streamName, 
+      {
+        streamName,
         message: {
           id: uuid(),
           type: "TestEvent",
           data: {},
           metadata: {},
-        } 
+        }
       }
     ]);
 
     expect(results).toEqual([{ streamPosition: "0" }, { streamPosition: "1" }]);
-  })
-  
+  });
 });

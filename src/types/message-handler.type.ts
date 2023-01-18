@@ -8,4 +8,4 @@ export type MessageHandlerContext = {
 
 export type MessageHandlerFunc<
   T extends Message = Message
-> = (message: T, context: MessageHandlerContext) => Promise<boolean>;
+> = (message: T, context: MessageHandlerContext) => Promise<void>;

@@ -12,6 +12,6 @@ export type Projection<EntityType = any, MessageTypes extends Message = Message>
   projectionName: string;
   entity: EntityType | EntityInitFn<EntityType>
   handlers: Partial<{
-    [Property in MessageTypes['type']]: ProjectionHandlerFunc<EntityType, Extract<MessageTypes, Message<Serializeable, Property>>>
+    [Property in MessageTypes['type'] as Extract<Property, string>]: ProjectionHandlerFunc<EntityType, Extract<MessageTypes, Message<Serializeable, Property>>>
   }>;
 };

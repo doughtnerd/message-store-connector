@@ -9,6 +9,7 @@ export type MessageHandlers = {
 
 export type SubscribeToStreamOptions = {
   pollingInterval?: number;
+  positionUpdateInterval?: number;
   startingPosition?: number;
   retries?: number;
   batchSize?: number;
@@ -16,6 +17,7 @@ export type SubscribeToStreamOptions = {
 };
 
 export type SubscribeToCategoryOptions = {
+  positionUpdateInterval?: number;
   pollingInterval?: number;
   retries?: number;
   startingPosition?: number;

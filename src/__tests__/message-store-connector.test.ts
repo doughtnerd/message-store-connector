@@ -277,7 +277,7 @@ describe("Message Store Connector", () => {
           return Promise.resolve();
         },
       },
-      { pollingInterval: 100 }
+      { pollingInterval: 100, positionUpdateInterval: 1 }
     );
 
     await messageStore.writeMessage(`testStream-${streamId}`, {
@@ -300,7 +300,7 @@ describe("Message Store Connector", () => {
           return Promise.resolve();
         },
       },
-      { pollingInterval: 100 }
+      { pollingInterval: 100, positionUpdateInterval: 1 }
     );
 
     await wait(1000);

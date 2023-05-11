@@ -9,10 +9,11 @@ export class MessageStore implements IMessageStore {
   constructor(private client: IMessageDBClient, private logger: Logger = NoopLogger) {}
 
   async subscribeToStream(subscriberId: string, streamName: string, handlers: MessageHandlers, options: SubscribeToStreamOptions): Promise<{ unsubscribe: () => void; }> {
-    const { pollingInterval = 1000, batchSize, condition, retries = 1 } = options;
+    const { pollingInterval = 1000, positionUpdateInterval = 100, batchSize, condition, retries = 1 } = options;
     let { startingPosition = 0 } = options;
 
     let position: number = await loadStreamSubscriberPosition(this.client, subscriberId, this.logger, startingPosition);
+    let lastSavedPosition: number = position;
 
     let shouldUnsubscribe = false;
 
@@ -34,7 +35,9 @@ export class MessageStore implements IMessageStore {
           } as MessageHandlerContext);
         }
         position = message.globalPosition + 1;
-        await saveStreamSubscriberPosition(this.client, subscriberId, position, this.logger);
+        if (position >= lastSavedPosition + positionUpdateInterval) {
+          await saveStreamSubscriberPosition(this.client, subscriberId, position, this.logger);
+        }
       }
 
       return true;
@@ -64,11 +67,12 @@ export class MessageStore implements IMessageStore {
   }
 
   async subscribeToCategory(subscriberId: string, streamName: string, handlers: MessageHandlers, options: SubscribeToCategoryOptions): Promise<{ unsubscribe: () => void; }> {
-    const { pollingInterval = 1000, retries = 1, ...remainingOptions } = options;
+    const { pollingInterval = 1000, positionUpdateInterval = 100, retries = 1, ...remainingOptions } = options;
     let { startingPosition = 0 } = options;
   
     let position: number = await loadStreamSubscriberPosition(this.client, subscriberId, this.logger, startingPosition);
-  
+    let lastSavedPosition: number = position;
+
     let shouldUnsubscribe = false;
   
     let unsubscribe = () => {
@@ -88,7 +92,9 @@ export class MessageStore implements IMessageStore {
           } as MessageHandlerContext);
         }
         position = message.globalPosition + 1;
-        await saveStreamSubscriberPosition(this.client, subscriberId, position, this.logger);
+        if (position >= lastSavedPosition + positionUpdateInterval) {
+          await saveStreamSubscriberPosition(this.client, subscriberId, position, this.logger);
+        }
       }
   
       return true;

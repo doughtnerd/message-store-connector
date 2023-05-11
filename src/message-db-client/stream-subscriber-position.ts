@@ -3,17 +3,16 @@ import { Message } from "../types/message.type";
 import { v4 as uuid } from "uuid";
 import {IMessageDBClient} from "./message-db-client.interface";
 
-const SUBSCRIBER_POSITION_STREAM_CATEGORY = "streamSubscriber";
-
 type PositionAdvancedMessage = Message<{ streamPosition: number }, 'PositionAdvanced'>;
 
 export async function loadStreamSubscriberPosition(
   client: IMessageDBClient,
+  category: string,
   subscriberId: string,
   logger: Logger,
   defaultPosition: number = 0
 ): Promise<number> {
-  const subscriptionPositionStream = `${SUBSCRIBER_POSITION_STREAM_CATEGORY}-${subscriberId}`;
+  const subscriptionPositionStream = `${category}+position-${subscriberId}`;
   const [lastMessage] = (await client.getLastStreamMessage(subscriptionPositionStream)) as Message<{ streamPosition: number }>[];
 
   if (lastMessage) {
@@ -26,8 +25,14 @@ export async function loadStreamSubscriberPosition(
   }
 }
 
-export async function saveStreamSubscriberPosition(client: IMessageDBClient, subscriberId: string, newPosition: number, logger: Logger) {
-  await client.writeMessage<PositionAdvancedMessage>(`${SUBSCRIBER_POSITION_STREAM_CATEGORY}-${subscriberId}`, {
+export async function saveStreamSubscriberPosition(
+  client: IMessageDBClient,
+  category: string,
+  subscriberId: string,
+  newPosition: number,
+  logger: Logger
+) {
+  await client.writeMessage<PositionAdvancedMessage>(`${category}+position-${subscriberId}`, {
     id: uuid(),
     type: "PositionAdvanced",
     data: {

@@ -2,7 +2,7 @@ import {GetCategoryMessagesOptions, GetStreamMessagesOptions, MessageBatchConfig
 import {Projection} from "./entity-projection.type";
 import {Logger} from "./logger.type";
 import {MessageHandlerFunc} from "./message-handler.type";
-import {IMessageStore, MessageHandlers, ProjectCategoryOptions, ProjectOptions, SubscribeToCategoryOptions, SubscribeToStreamOptions} from "./message-store.interface";
+import {IMessageStore, MessageHandlers, ProjectOptions, SubscribeToCategoryOptions } from "./message-store.interface";
 import {Message, MinimalWritableMessage} from "./message.type";
 import { Serializeable, SerializeableRecord } from "./serializeable.type";
 import { TypePredicate } from "./type-predicate.type";
@@ -118,24 +118,11 @@ interface IMessageStoreWithContract<C extends Contract> {
     options?: ProjectOptions
   ): Promise<C['aggregateRoot']>;
 
-  projectCategory(
-    categoryName: StreamName<C['streamCategoryName']> | string,
-    entityProjection: WithContract<C, Projection>,
-    options?: ProjectCategoryOptions
-  ): Promise<C['aggregateRoot']>;
-
   subscribeToCategory(
     subscriberId: string,
     streamName: StreamName<C['streamCategoryName']> | string,
     handlers: WithContract<C, MessageHandlers>,
     options?: SubscribeToCategoryOptions
-  ): Promise<{ unsubscribe: () => void }>;
-
-  subscribeToStream(
-    subscriberId: string,
-    streamName: StreamName<C['streamCategoryName']> | string,
-    handlers: WithContract<C, MessageHandlers>,
-    options?: SubscribeToStreamOptions
   ): Promise<{ unsubscribe: () => void }>;
 
   getCategoryMessages(
@@ -177,7 +164,6 @@ export type WithContract<
     K extends IMessageStore ? IMessageStoreWithContract<T> :
     unknown;
 
-
 type AccountAggregate = { balance: number };
 
 type WithdrawContract = MessageContract<{ amount: number }>;
@@ -196,17 +182,3 @@ type AccountContract = Contract<
     Deposited: MessageContract<{ dAmount: number }>
   }
 >;
-
-type MyMessages = ContractMessages<AccountContract>;
-
-const projection: WithContract<AccountContract, Projection> = {
-  projectionName: 'Projection',
-  entity: { balance: 0 },
-  handlers: {
-    Withdrawn: (entity, event) => {
-      entity.balance -= event.data.amount;
-      return entity;
-    },
-  }
-};
-

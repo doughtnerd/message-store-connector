@@ -7,15 +7,6 @@ export type MessageHandlers = {
   [key: string]: MessageHandlerFunc;
 };
 
-export type SubscribeToStreamOptions = {
-  pollingInterval?: number;
-  positionUpdateInterval?: number;
-  startingPosition?: number;
-  retries?: number;
-  batchSize?: number;
-  condition?: string;
-};
-
 export type SubscribeToCategoryOptions = {
   positionUpdateInterval?: number;
   pollingInterval?: number;
@@ -34,23 +25,7 @@ export type ProjectOptions = {
   condition?: string;
 };
 
-export type ProjectCategoryOptions = {
-  startingPosition?: number;
-  batchSize?: number;
-  correlation?: string;
-  consumerGroupMember?: string;
-  consumerGroupSize?: string;
-  condition?: string;
-};
-
 export interface IMessageStore extends IMessageDBClient {
-  subscribeToStream(
-    subscriberId: string,
-    streamName: string,
-    handlers: MessageHandlers,
-    options?: SubscribeToStreamOptions
-  ): Promise<{ unsubscribe: () => void }>;
-
   subscribeToCategory(
     subscriberId: string,
     streamName: string,
@@ -63,10 +38,4 @@ export interface IMessageStore extends IMessageDBClient {
     entityProjection: Projection<EntityType, MessageTypes>,
     options?: ProjectOptions
   ): Promise<EntityType>;
-  
-  projectCategory: <EntityType, MessageTypes extends Message>(
-    categoryName: string,
-    entityProjection: Projection<EntityType, MessageTypes>,
-    options?: ProjectCategoryOptions
-  ) => Promise<EntityType>;
 }

@@ -10,8 +10,12 @@ export type Message<T extends Serializeable = {}, K extends string = string> = {
   metadata: {
     replyStreamName?: string;
     correlationStreamName?: string;
+    causationMessagePosition?: string;
+    causationMessageGlobalPosition?: string;
+    causationMessageStreamName?: string;
     traceId?: string;
     userId?: string;
+    schemaVersion?: string;
   };
   time: Date;
 };

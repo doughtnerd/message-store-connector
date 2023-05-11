@@ -2,75 +2,17 @@ import promisePoller from 'promise-poller';
 import { loadStreamSubscriberPosition, saveStreamSubscriberPosition } from "../message-db-client";
 import { GetCategoryMessagesOptions, GetStreamMessagesOptions, IMessageDBClient, MessageBatchConfig } from "../message-db-client/message-db-client.interface";
 import { NoopLogger } from '../noop-logger';
-import { EntityInitFn, IMessageStore, Logger, Message, MessageHandlerContext, MessageHandlers, MinimalWritableMessage, ProjectCategoryOptions, Projection, ProjectOptions, SubscribeToCategoryOptions, SubscribeToStreamOptions } from "../types";
+import { EntityInitFn, IMessageStore, Logger, Message, MessageHandlerContext, MessageHandlers, MinimalWritableMessage, Projection, ProjectOptions, SubscribeToCategoryOptions } from "../types";
 
 export class MessageStore implements IMessageStore {
 
   constructor(private client: IMessageDBClient, private logger: Logger = NoopLogger) {}
 
-  async subscribeToStream(subscriberId: string, streamName: string, handlers: MessageHandlers, options: SubscribeToStreamOptions): Promise<{ unsubscribe: () => void; }> {
-    const { pollingInterval = 1000, positionUpdateInterval = 100, batchSize, condition, retries = 1 } = options;
-    let { startingPosition = 0 } = options;
-
-    let position: number = await loadStreamSubscriberPosition(this.client, subscriberId, this.logger, startingPosition);
-    let lastSavedPosition: number = position;
-
-    let shouldUnsubscribe = false;
-
-    let unsubscribe = () => {
-      shouldUnsubscribe = true;
-    };
-
-    const poll: () => Promise<boolean> = async () => {
-      const messages = await this.client.getStreamMessages(streamName, { startingPosition: position, batchSize, condition });
-
-      for (const message of messages) {
-        if (Object.prototype.hasOwnProperty.call(handlers, message.type)) {
-          const handler = handlers[message.type];
-          await handler(message, {
-            logger: this.logger,
-            /* @ts-ignore */
-            messageStore: this,
-            unsubscribe,
-          } as MessageHandlerContext);
-        }
-        position = message.globalPosition + 1;
-        if (position >= lastSavedPosition + positionUpdateInterval) {
-          await saveStreamSubscriberPosition(this.client, subscriberId, position, this.logger);
-        }
-      }
-
-      return true;
-    };
-
-    const poller = promisePoller({
-      taskFn: poll,
-      interval: pollingInterval,
-      name: `${subscriberId} Poll to ${streamName}`,
-      retries,
-      shouldContinue: (_: any, resolvedValue: unknown) => {
-        if (shouldUnsubscribe) return false;
-        return resolvedValue ? true : false;
-      },
-    });
-
-    // This is kinda weird check logic that needs to happen for promisePoller library on cancelled subscriptions
-    poller.then().catch((e) => {
-      if (e instanceof Array) {
-        this.logger.log("Subscription Closed");
-      } else {
-        throw e;
-      }
-    });
-
-    return { unsubscribe };
-  }
-
   async subscribeToCategory(subscriberId: string, streamName: string, handlers: MessageHandlers, options: SubscribeToCategoryOptions): Promise<{ unsubscribe: () => void; }> {
     const { pollingInterval = 1000, positionUpdateInterval = 100, retries = 1, ...remainingOptions } = options;
     let { startingPosition = 0 } = options;
   
-    let position: number = await loadStreamSubscriberPosition(this.client, subscriberId, this.logger, startingPosition);
+    let position: number = await loadStreamSubscriberPosition(this.client, streamName, subscriberId, this.logger, startingPosition);
     let lastSavedPosition: number = position;
 
     let shouldUnsubscribe = false;
@@ -93,7 +35,7 @@ export class MessageStore implements IMessageStore {
         }
         position = message.globalPosition + 1;
         if (position >= lastSavedPosition + positionUpdateInterval) {
-          await saveStreamSubscriberPosition(this.client, subscriberId, position, this.logger);
+          await saveStreamSubscriberPosition(this.client, streamName, subscriberId, position, this.logger);
         }
       }
   
@@ -150,19 +92,6 @@ export class MessageStore implements IMessageStore {
     return entity;
   }
 
-  async projectCategory<EntityType, MessageTypes extends Message>(categoryName: string, entityProjection: Projection<EntityType, MessageTypes>, options?: ProjectCategoryOptions): Promise<EntityType> {
-    options = options ?? {};
-
-    let entity = initializeEntity<EntityType, MessageTypes>(entityProjection);
-
-    const messages = await this.client.getCategoryMessages(categoryName, options);
-    for (const message of messages) {
-      entity = doProjection<EntityType, MessageTypes>(entity, message, entityProjection);
-    }
-
-    return entity;
-  }
-  
   getCategoryMessages(categoryName: string, options?: GetCategoryMessagesOptions): Promise<Message[]> {
     return this.client.getCategoryMessages(categoryName, options);
   }

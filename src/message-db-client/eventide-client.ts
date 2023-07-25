@@ -60,11 +60,11 @@ export class EventideClient implements IMessageDBClient {
     return { streamPosition: rows[0].write_message };
   }
 
-  async writeBatch(messageBatch: {message: Message<never, never>, streamName: string; expectedVersion?: number | undefined}[]): Promise<{streamPosition: string;}[]> {
+  async writeBatch(streamName: string, messageBatch: MinimalWritableMessage<Message>[], expectedVersion?: number | undefined): Promise<{streamPosition: string;}[]> {
     try {
       await this.client.beginTransaction();
       const results = await Promise.all(
-        messageBatch.map(b => this.writeMessage(b.streamName, b.message, b.expectedVersion))
+        messageBatch.map((b, i) => this.writeMessage(streamName, b, expectedVersion ? expectedVersion + i : undefined))
       );
 
       await this.client.commitTransaction();

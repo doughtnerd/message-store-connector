@@ -112,8 +112,8 @@ export class MessageStore implements IMessageStore {
     return this.client.writeMessage(streamName, message, expectedVersion);
   }
 
-  writeBatch(messageBatch: MessageBatchConfig[]): Promise<{ streamPosition: string; }[]> {
-    return this.client.writeBatch(messageBatch);
+  writeBatch(streamName: string, messageBatch: MinimalWritableMessage<Message>[], expectedVersion?: number | undefined): Promise<{streamPosition: string;}[]> {
+    return this.client.writeBatch(streamName, messageBatch, expectedVersion);
   }
 }
 

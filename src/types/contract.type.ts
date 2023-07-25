@@ -145,7 +145,7 @@ interface IMessageStoreWithContract<C extends Contract> {
     expectedVersion?: number
   ): Promise<{ streamPosition: string }>;
 
-  writeBatch(messageBatch: Array<WithContract<C, MessageBatchConfig>>): Promise<Array<{ streamPosition: string }>>;
+  writeBatch(streamName: string, messageBatch: MinimalWritableMessage<Message>[], expectedVersion?: number | undefined): Promise<{streamPosition: string;}[]>;
 }
 
 export type WithContract<

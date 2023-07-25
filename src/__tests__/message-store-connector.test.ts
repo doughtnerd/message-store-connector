@@ -325,25 +325,19 @@ describe("Message Store Connector", () => {
   test("Can write a batch of messages", async () => {
     const uniqueCategory = `uniqueCategory${uuid().replace(/-/g, "")}`;
     const streamName = `${uniqueCategory}-${uuid()}`;
-    const results = await messageStore.writeBatch([
-      {
-        streamName,
-        message: {
-          id: uuid(),
-          type: "TestEvent",
-          data: {},
-          metadata: {},
+    const results = await messageStore.writeBatch(streamName, [
+        {
+            id: uuid(),
+            type: "TestEvent",
+            data: {},
+            metadata: {},
+        },
+        {
+            id: uuid(),
+            type: "TestEvent",
+            data: {},
+            metadata: {},
         }
-      },
-      {
-        streamName,
-        message: {
-          id: uuid(),
-          type: "TestEvent",
-          data: {},
-          metadata: {},
-        }
-      }
     ]);
 
     expect(results).toEqual([{ streamPosition: "0" }, { streamPosition: "1" }]);

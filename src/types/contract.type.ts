@@ -5,6 +5,7 @@ import {MessageHandlerFunc} from "./message-handler.type";
 import {IMessageStore, MessageHandlers, ProjectOptions, SubscribeToCategoryOptions } from "./message-store.interface";
 import {Message, MinimalWritableMessage} from "./message.type";
 import { Serializeable, SerializeableRecord } from "./serializeable.type";
+import { Subscription } from "./subscription.type";
 import { TypePredicate } from "./type-predicate.type";
 
 type DataFieldContract<T extends Serializeable = Serializeable> = {
@@ -123,7 +124,7 @@ interface IMessageStoreWithContract<C extends Contract> {
     streamName: StreamName<C['streamCategoryName']> | string,
     handlers: WithContract<C, MessageHandlers>,
     options?: SubscribeToCategoryOptions
-  ): Promise<{ unsubscribe: () => void }>;
+  ): Promise<Subscription>;
 
   getCategoryMessages(
     categoryName: StreamName<C['streamCategoryName']> | string,

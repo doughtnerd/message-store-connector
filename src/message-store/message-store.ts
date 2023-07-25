@@ -1,14 +1,14 @@
 import promisePoller from 'promise-poller';
 import { loadStreamSubscriberPosition, saveStreamSubscriberPosition } from "../message-db-client";
-import { GetCategoryMessagesOptions, GetStreamMessagesOptions, IMessageDBClient, MessageBatchConfig } from "../message-db-client/message-db-client.interface";
+import { GetCategoryMessagesOptions, GetStreamMessagesOptions, IMessageDBClient } from "../message-db-client/message-db-client.interface";
 import { NoopLogger } from '../noop-logger';
-import { EntityInitFn, IMessageStore, Logger, Message, MessageHandlerContext, MessageHandlers, MinimalWritableMessage, Projection, ProjectOptions, SubscribeToCategoryOptions } from "../types";
+import { EntityInitFn, IMessageStore, Logger, Message, MessageHandlerContext, MessageHandlers, MinimalWritableMessage, Projection, ProjectOptions, SubscribeToCategoryOptions, Subscription } from "../types";
 
 export class MessageStore implements IMessageStore {
 
   constructor(private client: IMessageDBClient, private logger: Logger = NoopLogger) {}
 
-  async subscribeToCategory(subscriberId: string, streamName: string, handlers: MessageHandlers, options: SubscribeToCategoryOptions): Promise<{ unsubscribe: () => void; }> {
+  async subscribeToCategory(subscriberId: string, streamName: string, handlers: MessageHandlers, options: SubscribeToCategoryOptions): Promise<Subscription> {
     const { pollingInterval = 1000, positionUpdateInterval = 100, retries = 1, ...remainingOptions } = options;
     let { startingPosition = 0 } = options;
   

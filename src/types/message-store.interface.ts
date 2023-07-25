@@ -2,6 +2,7 @@ import { IMessageDBClient } from "../message-db-client";
 import { Projection } from "./entity-projection.type";
 import { MessageHandlerFunc } from "./message-handler.type";
 import { Message } from "./message.type";
+import { Subscription } from "./subscription.type";
 
 export type MessageHandlers = {
   [key: string]: MessageHandlerFunc;
@@ -31,7 +32,7 @@ export interface IMessageStore extends IMessageDBClient {
     streamName: string,
     handlers: MessageHandlers,
     options?: SubscribeToCategoryOptions
-  ): Promise<{ unsubscribe: () => void }>;
+  ): Promise<Subscription>;
 
   project<EntityType, MessageTypes extends Message>(
     streamName: string,

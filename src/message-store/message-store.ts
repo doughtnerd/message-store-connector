@@ -36,6 +36,7 @@ export class MessageStore implements IMessageStore {
         position = message.globalPosition + 1;
         if (position >= lastSavedPosition + positionUpdateInterval) {
           await saveStreamSubscriberPosition(this.client, streamName, subscriberId, position, this.logger);
+          lastSavedPosition = position;
         }
       }
   

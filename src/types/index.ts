@@ -6,3 +6,4 @@ export * from './message-store.interface';
 export * from './message.type';
 export * from './contract.type';
 export * from './subscription.type';
+export * from './serializeable.type';

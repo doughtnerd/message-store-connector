@@ -8,19 +8,28 @@ export class MessageStore implements IMessageStore {
 
   constructor(private client: IMessageDBClient, private logger: Logger = NoopLogger) {}
 
+  /**
+  * Tells the message store to subscribe to a particular stream category.
+  * When a message for that category is received, the message will be dispatched to the appropriate handler (if one exists).
+  *
+  * @param subscriberId Unique id for the subscriber. This is used for position tracking and should be unique to a message store.
+  * @param streamName The name of the stream category to subscribe to (e.g. 'shoppingCart:command').
+  * @param handlers An object containing message handlers for each message type.
+  * @param options Options for the subscription.
+  */
   async subscribeToCategory(subscriberId: string, streamName: string, handlers: MessageHandlers, options: SubscribeToCategoryOptions): Promise<Subscription> {
     const { pollingInterval = 1000, positionUpdateInterval = 100, retries = 1, ...remainingOptions } = options;
     let { startingPosition = 0 } = options;
-  
+
     let position: number = await loadStreamSubscriberPosition(this.client, streamName, subscriberId, this.logger, startingPosition);
     let lastSavedPosition: number = position;
 
     let shouldUnsubscribe = false;
-  
+
     let unsubscribe = () => {
       shouldUnsubscribe = true;
     };
-  
+
     const poll: () => Promise<boolean> = async () => {
       const messages = await this.client.getCategoryMessages(streamName, { startingPosition: position, ...remainingOptions });
       for (const message of messages) {
@@ -39,10 +48,10 @@ export class MessageStore implements IMessageStore {
           lastSavedPosition = position;
         }
       }
-  
+
       return true;
     };
-  
+
     const poller = promisePoller({
       taskFn: poll,
       interval: pollingInterval,
@@ -53,16 +62,16 @@ export class MessageStore implements IMessageStore {
         return resolvedValue ? true : false;
       },
     });
-  
+
     // This is kinda weird check logic that needs to happen for promisePoller library on cancelled subscriptions
     poller.then().catch((e) => {
       if (e instanceof Array) {
-        this.logger.log("Subscription Closed");
+        this.logger.debug("Subscription Closed");
       } else {
         throw e;
       }
     });
-  
+
     return { unsubscribe };
   }
 
@@ -70,26 +79,26 @@ export class MessageStore implements IMessageStore {
     options = options ?? {};
     let { startingPosition = 0 } = options;
     const { batchSize, condition } = options;
-  
+
     let entity = initializeEntity<EntityType, MessageTypes>(entityProjection);
-  
+
     const latestStreamVersion = await this.client.getStreamVersion(streamName);
-  
+
     if (latestStreamVersion.streamVersion === null) {
       return entity;
     }
-  
+
     const parsedStreamVersion = latestStreamVersion.streamVersion;
-  
+
     while (startingPosition <= parsedStreamVersion) {
       const messages = await this.client.getStreamMessages(streamName, { startingPosition, batchSize, condition });
       for (const message of messages) {
         entity = doProjection<EntityType, MessageTypes>(entity, message, entityProjection);
       }
-  
+
       startingPosition += messages.length;
     }
-  
+ 
     return entity;
   }
 

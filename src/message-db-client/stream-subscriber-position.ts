@@ -17,10 +17,10 @@ export async function loadStreamSubscriberPosition(
 
   if (lastMessage) {
     const position = lastMessage.data.streamPosition;
-    logger.log(`Successfully loaded position: ${position} for subscriber: ${subscriberId}`);
+    logger.debug(`Successfully loaded position: ${position} for subscriber: ${subscriberId}`);
     return position;
   } else {
-    logger.log(`Failed to load position for subscriber: ${subscriberId}, using default: ${defaultPosition}`);
+    logger.debug(`Failed to load position for subscriber: ${subscriberId}, using default: ${defaultPosition}`);
     return defaultPosition;
   }
 }

@@ -1,3 +1,4 @@
+import { v4 } from "uuid";
 import {Message, MinimalWritableMessage} from "../types";
 import {IMessageDBClient} from "./message-db-client.interface";
 import {ISQLClient} from "./sql-client.interface";
@@ -53,7 +54,7 @@ export class EventideClient implements IMessageDBClient {
   }
 
   async writeMessage<T extends Message>(streamName: string, message: T | MinimalWritableMessage<T>, expectedVersion?: number): Promise<{streamPosition: string;}> {
-    const { id, type, data, metadata } = message;
+    const { id = v4(), type, data, metadata } = message;
     const writeMessageString = "SELECT write_message($1, $2, $3, $4, $5, $6);";
 
     const { rows } = await this.client.query<{ rows: { write_message: string }[] }>(writeMessageString, [id, streamName, type, data, metadata, expectedVersion]);

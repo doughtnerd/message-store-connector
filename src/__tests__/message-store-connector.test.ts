@@ -41,7 +41,9 @@ describe("Message Store Connector", () => {
     await messageStore.writeMessage(`testStream-${streamId}`, {
       id: messageId,
       type: "TestEvent",
-      data: {},
+      data: {
+        foo: "bar",
+      },
       metadata: {},
     });
     const message = await messageStore.getLastStreamMessage(`testStream-${streamId}`);
@@ -52,13 +54,11 @@ describe("Message Store Connector", () => {
   test("Can write several message and retrieve them", async () => {
     const streamId = uuid();
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
     });
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -70,14 +70,14 @@ describe("Message Store Connector", () => {
 
   test("Calls the correct handler for a message type in a category subscription", async () => {
     const streamId = uuid();
-    const messageId = uuid();
     const uniqueCategory = uuid().replace(/\-/g, '')
     const fakeFunc = jest.fn()
 
     await messageStore.writeMessage(`testCategorySub${uniqueCategory}:command-${streamId}`, {
-      id: messageId,
       type: "TestEvent",
-      data: {},
+      data: {
+        foo: 'bar'
+      },
       metadata: {},
     })
 
@@ -86,7 +86,7 @@ describe("Message Store Connector", () => {
       `testCategorySub${uniqueCategory}:command`,
       {
         TestEvent: (message: Message, context: any) => {
-          expect(message.id).toEqual(messageId);
+          expect(message.data).toEqual({ foo: 'bar' });
           fakeFunc()
           return Promise.resolve();
         },
@@ -117,7 +117,6 @@ describe("Message Store Connector", () => {
     );
 
     await messageStore.writeMessage(`${uniqueCategory}:command-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -128,7 +127,6 @@ describe("Message Store Connector", () => {
     await wait(300);
 
     await messageStore.writeMessage(`${uniqueCategory}-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -141,9 +139,7 @@ describe("Message Store Connector", () => {
 
   test("Projection can be ran against a stream with one message in it", async () => {
     const streamId = uuid();
-    const messageId = uuid();
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: messageId,
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -171,9 +167,7 @@ describe("Message Store Connector", () => {
 
   test("Projection gracefully continues if there's no matching handler for an event", async () => {
     const streamId = uuid();
-    const messageId = uuid();
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: messageId,
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -197,13 +191,11 @@ describe("Message Store Connector", () => {
   test("Projection can be ran against a stream with multiple messages in it", async () => {
     const streamId = uuid();
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
     });
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -257,13 +249,11 @@ describe("Message Store Connector", () => {
   test("Projection can be ran against a stream with multiple messages in it beyond the batch size", async () => {
     const streamId = uuid();
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
     });
     await messageStore.writeMessage(`testStream-${streamId}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -296,7 +286,6 @@ describe("Message Store Connector", () => {
   test("Can write messages of the same category but different streams and retrieve them", async () => {
     const uniqueCategory = `uniqueCategory${uuid().replace(/-/g, "")}`;
     await messageStore.writeMessage(`${uniqueCategory}-${uuid()}`, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -304,7 +293,6 @@ describe("Message Store Connector", () => {
 
     const secondMessageStream = `${uniqueCategory}-${uuid()}`;
     await messageStore.writeMessage(secondMessageStream, {
-      id: uuid(),
       type: "TestEvent",
       data: {},
       metadata: {},
@@ -327,13 +315,11 @@ describe("Message Store Connector", () => {
     const streamName = `${uniqueCategory}-${uuid()}`;
     const results = await messageStore.writeBatch(streamName, [
         {
-            id: uuid(),
             type: "TestEvent",
             data: {},
             metadata: {},
         },
         {
-            id: uuid(),
             type: "TestEvent",
             data: {},
             metadata: {},

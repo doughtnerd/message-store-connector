@@ -1,6 +1,5 @@
 import { Logger } from "../types/logger.type";
 import { Message } from "../types/message.type";
-import { v4 as uuid } from "uuid";
 import {IMessageDBClient} from "./message-db-client.interface";
 
 type PositionAdvancedMessage = Message<{ streamPosition: number }, 'PositionAdvanced'>;
@@ -33,7 +32,6 @@ export async function saveStreamSubscriberPosition(
   logger: Logger
 ) {
   await client.writeMessage<PositionAdvancedMessage>(`${category}+position-${subscriberId}`, {
-    id: uuid(),
     type: "PositionAdvanced",
     data: {
       streamPosition: newPosition,

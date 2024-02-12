@@ -49,6 +49,74 @@ describe("Message Store Connector", () => {
     expect(message[0].id).toEqual(messageId);
   });
 
+  test('Does not fail silently when closing a subscription due to a handler rejection', async () => {
+    const streamId = uuid();
+    const messageId = uuid();
+    const uniqueCategory = uuid().replace(/\-/g, '')
+
+    const spy = jest.spyOn(NoopLogger, 'error');
+
+    await messageStore.writeMessage(`testCategorySub${uniqueCategory}:command-${streamId}`, {
+      id: messageId,
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    })
+
+    messageStore.subscribeToCategory(
+      uuid(),
+      `testCategorySub${uniqueCategory}:command`,
+      {
+        TestEvent: (message: Message, context: any) => {
+          throw new Error('Test error')
+        }
+      },
+      {
+        pollingInterval: 100,
+        positionUpdateInterval: 100,
+        retries: 1
+      }
+    )
+    await wait(200)
+
+    expect(spy).toHaveBeenCalledWith(expect.any(String), expect.arrayContaining([expect.any(Error)]));
+
+    spy.mockRestore();
+  });
+
+  test('Retries the handler when it fails', async () => {
+    const streamId = uuid();
+    const messageId = uuid();
+    const uniqueCategory = uuid().replace(/\-/g, '')
+    const fakeFunc = jest.fn()
+
+    await messageStore.writeMessage(`testCategorySub${uniqueCategory}:command-${streamId}`, {
+      id: messageId,
+      type: "TestEvent",
+      data: {},
+      metadata: {},
+    })
+
+    messageStore.subscribeToCategory(
+      uuid(),
+      `testCategorySub${uniqueCategory}:command`,
+      {
+        TestEvent: (message: Message, context: any) => {
+          fakeFunc()
+          throw new Error('Test error')
+        }
+      },
+      {
+        pollingInterval: 100,
+        positionUpdateInterval: 100,
+        retries: 2
+      }
+    )
+    await wait(200);
+
+    expect(fakeFunc).toHaveBeenCalledTimes(2);
+  });
+
   test("Can write several message and retrieve them", async () => {
     const streamId = uuid();
     await messageStore.writeMessage(`testStream-${streamId}`, {

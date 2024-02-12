@@ -57,19 +57,13 @@ export class MessageStore implements IMessageStore {
       interval: pollingInterval,
       name: `${subscriberId} Poll to ${streamName}`,
       retries,
-      shouldContinue: (_: any, resolvedValue: unknown) => {
-        if (shouldUnsubscribe) return false;
-        return resolvedValue ? true : false;
+      shouldContinue: (_rejectionReason: any, _resolvedValue: unknown) => {
+        return shouldUnsubscribe === false;
       },
     });
 
-    // This is kinda weird check logic that needs to happen for promisePoller library on cancelled subscriptions
-    poller.then().catch((e) => {
-      if (e instanceof Array) {
-        this.logger.debug("Subscription Closed");
-      } else {
-        throw e;
-      }
+    poller.catch((e) => {
+      this.logger.error(`Subscription closing: ${subscriberId} to ${streamName}.\r\nSubscription encountered the following errors:`, e);
     });
 
     return { unsubscribe };

@@ -76,7 +76,7 @@ describe("Message Store Connector", () => {
         retries: 1
       }
     )
-    subscription.on('subscription_closed', (message, errors) =>{
+    subscription.on('subscription_error', (message, errors) =>{
         mockFn(message, errors);
     });
 
@@ -184,10 +184,6 @@ describe("Message Store Connector", () => {
       },
       { pollingInterval: 100 }
     );
-
-    subscription.on('subscription_closed', () => {
-        console.log('CLOSED');
-    });
 
     await messageStore.writeMessage(`${uniqueCategory}:command-${streamId}`, {
       id: uuid(),

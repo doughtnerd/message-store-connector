@@ -4,11 +4,13 @@ import promisePoller, { PromisePollerOptions } from "promise-poller";
 enum Status {
     CLOSED,
     OPEN,
+    ERROR,
 }
 
 type SubscriptionListener = {
     subscription_opened: (message: string) => void;
-    subscription_closed: (message: string, errors: Error[]) => void;
+    subscription_closed: (message: string) => void;
+    subscription_error: (message: string, errors: Error[]) => void;
 };
 
 type SubscriptionOptions = {
@@ -33,8 +35,8 @@ export class Subscription extends EventEmitter {
         }
 
         this.status = Status.OPEN;
-        this.emit('subscription_opened', `Subscription opened: ${this.options.id}`);
-        const poller = promisePoller({
+        this.emit('subscription_opened', `Subscription ${this.options.id} opened.`);
+        promisePoller({
             taskFn: this.options.pollFn,
             interval: this.options.pollingInterval,
             name: this.options.id,
@@ -43,11 +45,17 @@ export class Subscription extends EventEmitter {
             shouldContinue: (_rejectionReason: any, _resolvedValue: unknown) => {
               return this.status === Status.OPEN;
             },
-        });
-        poller.catch((e) => {
+        }).then(() => {
             this.status = Status.CLOSED;
-            this.emit('subscription_closed', `Subscription closing: ${this.options.id}.`, e);
+            this.emit('subscription_closed', `Subscription ${this.options.id} closed.`);
+        }).catch((e) => {
+            this.status = Status.ERROR;
+            this.emit('subscription_error', `Subscription ${this.options.id} encountered errors:`, e);
         });
+    }
+
+    public once(event: keyof SubscriptionListener, listener: SubscriptionListener[typeof event]): this {
+        return super.once(event, listener);
     }
 
     public on(event: keyof SubscriptionListener, listener: SubscriptionListener[typeof event]): this {

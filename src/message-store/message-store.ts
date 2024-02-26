@@ -24,13 +24,7 @@ export class MessageStore implements IMessageStore {
     let position: number = await loadStreamSubscriberPosition(this.client, streamName, subscriberId, this.logger, startingPosition);
     let lastSavedPosition: number = position;
 
-    let shouldUnsubscribe = false;
-
-    let unsubscribe = () => {
-      shouldUnsubscribe = true;
-    };
-
-    const poll: () => Promise<boolean> = async () => {
+    const poll: () => Promise<void> = async () => {
       const messages = await this.client.getCategoryMessages(streamName, { startingPosition: position, ...remainingOptions });
       for (const message of messages) {
         if (Object.prototype.hasOwnProperty.call(handlers, message.type)) {
@@ -39,7 +33,6 @@ export class MessageStore implements IMessageStore {
             logger: this.logger,
             /* @ts-ignore */
             messageStore: this,
-            unsubscribe,
           } as MessageHandlerContext);
         }
         position = message.globalPosition + 1;
@@ -48,25 +41,19 @@ export class MessageStore implements IMessageStore {
           lastSavedPosition = position;
         }
       }
-
-      return true;
     };
 
-    const poller = promisePoller({
-      taskFn: poll,
-      interval: pollingInterval,
-      name: `${subscriberId} Poll to ${streamName}`,
-      retries,
-      shouldContinue: (_rejectionReason: any, _resolvedValue: unknown) => {
-        return shouldUnsubscribe === false;
-      },
+    const subscription = new Subscription({
+        id: subscriberId,
+        pollFn: poll,
+        pollingInterval,
+        retries,
+        retryStrategy: 'fixed-interval',
     });
 
-    poller.catch((e) => {
-      this.logger.error(`Subscription closing: ${subscriberId} to ${streamName}.\r\nSubscription encountered the following errors:`, e);
-    });
+    subscription.start();
 
-    return { unsubscribe };
+    return subscription;
   }
 
   async project<EntityType, MessageTypes extends Message>(streamName: string, entityProjection: Projection<EntityType, MessageTypes>, options?: ProjectOptions): Promise<EntityType> {

@@ -52,18 +52,17 @@ describe("Message Store Connector", () => {
   test('Does not fail silently when closing a subscription due to a handler rejection', async () => {
     const streamId = uuid();
     const messageId = uuid();
-    const uniqueCategory = uuid().replace(/\-/g, '')
-
-    const spy = jest.spyOn(NoopLogger, 'error');
+    const uniqueCategory = uuid().replace(/\-/g, '');
+    const mockFn = jest.fn();
 
     await messageStore.writeMessage(`testCategorySub${uniqueCategory}:command-${streamId}`, {
       id: messageId,
       type: "TestEvent",
       data: {},
       metadata: {},
-    })
+    });
 
-    messageStore.subscribeToCategory(
+    const subscription = await messageStore.subscribeToCategory(
       uuid(),
       `testCategorySub${uniqueCategory}:command`,
       {
@@ -77,11 +76,13 @@ describe("Message Store Connector", () => {
         retries: 1
       }
     )
-    await wait(200)
+    subscription.on('subscription_closed', (message, errors) =>{
+        mockFn(message, errors);
+    });
 
-    expect(spy).toHaveBeenCalledWith(expect.any(String), expect.arrayContaining([expect.any(Error)]));
+    await wait(200);
 
-    spy.mockRestore();
+    expect(mockFn).toHaveBeenCalledWith(expect.any(String), expect.arrayContaining([expect.any(Error)]));
   });
 
   test('Retries the handler when it fails', async () => {
@@ -172,7 +173,7 @@ describe("Message Store Connector", () => {
     const mockFunc = jest.fn();
     const uniqueCategory = uuid().replace(/\-/g, '');
 
-    const { unsubscribe } = await messageStore.subscribeToCategory(
+    const subscription = await messageStore.subscribeToCategory(
       uuid(),
       `${uniqueCategory}:command`,
       {
@@ -184,6 +185,10 @@ describe("Message Store Connector", () => {
       { pollingInterval: 100 }
     );
 
+    subscription.on('subscription_closed', () => {
+        console.log('CLOSED');
+    });
+
     await messageStore.writeMessage(`${uniqueCategory}:command-${streamId}`, {
       id: uuid(),
       type: "TestEvent",
@@ -192,10 +197,10 @@ describe("Message Store Connector", () => {
     });
 
     await wait(300);
-    unsubscribe();
+    subscription.unsubscribe();
     await wait(300);
 
-    await messageStore.writeMessage(`${uniqueCategory}-${streamId}`, {
+    await messageStore.writeMessage(`${uniqueCategory}:command-${streamId}`, {
       id: uuid(),
       type: "TestEvent",
       data: {},

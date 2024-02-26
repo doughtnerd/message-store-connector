@@ -1,6 +1,6 @@
 import { Subscription } from "./subscription.type";
 
-describe.only('Subscription', () => {
+describe('Subscription', () => {
     beforeAll(() => {
         jest.useFakeTimers();
     });

@@ -1,5 +1,5 @@
 import EventEmitter from "node:events";
-import promisePoller, { PromisePollerOptions } from "promise-poller";
+import promisePoller from "promise-poller";
 
 enum Status {
     CLOSED,
@@ -18,7 +18,7 @@ type SubscriptionOptions = {
     pollFn: () => Promise<void>;
     pollingInterval: number;
     retries: number;
-    retryStrategy: PromisePollerOptions<unknown>['strategy'];
+    retryStrategy: 'fixed-interval' | 'linear-backoff' | 'exponential-backoff' | undefined;
 }
 
 export class Subscription extends EventEmitter {
